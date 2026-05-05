@@ -1129,26 +1129,30 @@ function toggleChat(){
   chatOpen=!chatOpen;
   document.getElementById('chat-panel').classList.toggle('cp-hidden',!chatOpen);
   if(chatOpen){
-    const k=localStorage.getItem('anthro_key');
-    document.getElementById('chat-key-row').classList.toggle('cp-hidden',!!k);
+    updateKeyPlaceholder();
     setTimeout(()=>document.getElementById('chat-in').focus(),50);
     scrollChatEnd();
   }
 }
 
-function resetChatKey(){
-  localStorage.removeItem('anthro_key');
-  document.getElementById('chat-key-row').classList.remove('cp-hidden');
-  document.getElementById('chat-key-inp').value='';
-  document.getElementById('chat-key-inp').focus();
+function updateKeyPlaceholder(){
+  const k=localStorage.getItem('anthro_key');
+  const inp=document.getElementById('chat-key-inp');
+  inp.value='';
+  if(k){
+    const masked=k.slice(0,10)+'•'.repeat(18)+k.slice(-4);
+    inp.placeholder=masked;
+  }else{
+    inp.placeholder='sk-ant-… Anthropic API key';
+  }
 }
 function saveChatKey(){
   const v=document.getElementById('chat-key-inp').value.trim();
-  if(!v){showToast('Enter your Anthropic API key first',true);return;}
+  if(!v){showToast('Enter a new API key to replace the current one',true);return;}
   localStorage.setItem('anthro_key',v);
-  document.getElementById('chat-key-row').classList.add('cp-hidden');
   document.getElementById('chat-key-inp').value='';
-  showToast('API key saved');
+  updateKeyPlaceholder();
+  showToast('API key updated');
 }
 
 function scrollChatEnd(){
@@ -1196,7 +1200,7 @@ FOLIO SUMMARY (${resRows.length} total):
 
 async function sendChatMsg(){
   const key=localStorage.getItem('anthro_key');
-  if(!key){document.getElementById('chat-key-row').classList.remove('cp-hidden');document.getElementById('chat-key-inp').focus();return;}
+  if(!key){document.getElementById('chat-key-inp').focus();return;}
   const inp=document.getElementById('chat-in');
   const msg=inp.value.trim();
   if(!msg)return;
@@ -1243,15 +1247,12 @@ document.getElementById('chat-in').addEventListener('keydown',function(e){
       <div id="chat-hdr-title">Claude Assistant</div>
       <div id="chat-hdr-sub">Run a financial check to get context-aware answers</div>
     </div>
-    <div style="display:flex;align-items:center;gap:8px;">
-      <button onclick="resetChatKey()" title="Change API key" style="font-size:10px;padding:3px 8px;background:var(--bg-3);border:.5px solid var(--border-hi);border-radius:var(--r);color:var(--t2);cursor:pointer;font-family:sans-serif;">🔑 Key</button>
-      <button id="chat-close" onclick="toggleChat()">✕</button>
-    </div>
+    <button id="chat-close" onclick="toggleChat()">✕</button>
   </div>
   <div id="chat-key-row">
-    <span id="chat-key-lbl">API Key</span>
+    <span id="chat-key-lbl">🔑</span>
     <input type="password" id="chat-key-inp" placeholder="sk-ant-… Anthropic API key">
-    <button id="chat-key-save" onclick="saveChatKey()">Save</button>
+    <button id="chat-key-save" onclick="saveChatKey()">Update</button>
   </div>
   <div id="chat-msgs">
     <div class="cmsg cmsg-a">
