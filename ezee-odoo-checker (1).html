@@ -379,7 +379,7 @@ function findCol(rawHeaders,normHeaders,candidates){
   }
   for(const c of candidates){
     const cl=c.toLowerCase();
-    const idx=rawHeaders.findIndex(h=>h.toLowerCase().includes(cl)||cl.includes(h.toLowerCase()));
+    const idx=rawHeaders.findIndex(h=>{const hl=h.trim().toLowerCase();return hl&&(hl.includes(cl)||cl.includes(hl));});
     if(idx>=0)return{key:normHeaders[idx],raw:rawHeaders[idx],found:true};
   }
   return{key:null,raw:null,found:false};
@@ -408,7 +408,13 @@ async function runPreflight(){
     let rows=[],rawH=[],normH=[],issues=[];
     try{
       const text=await readText(f);
-      const parsed=parseCSV(text);
+      // eZee reports often start with a title/metadata row before the real headers.
+      // Scan the first 5 non-empty lines to find the one that is the actual header row.
+      const allLines=text.split(/\r?\n/).filter(l=>l.trim());
+      let hdrStart=0;
+      for(let i=0;i<Math.min(5,allLines.length);i++){if(/folio/i.test(allLines[i])){hdrStart=i;break;}}
+      const body=hdrStart>0?allLines.slice(hdrStart).join('\n'):text;
+      const parsed=parseCSV(body);
       rows=parsed.rows;rawH=parsed.rawHeaders;normH=parsed.headers;
       PARSED['esales']=parsed;
     }catch(e){issues.push({t:'❌',msg:'Failed to parse file: '+e.message,critical:true});}
@@ -696,7 +702,7 @@ function fc2(rawH,normH,cands){
   }
   for(const c of cands){
     const cl=c.toLowerCase();
-    const idx=rawH.findIndex(h=>h.toLowerCase().includes(cl)||cl.includes(h.toLowerCase()));
+    const idx=rawH.findIndex(h=>{const hl=h.trim().toLowerCase();return hl&&(hl.includes(cl)||cl.includes(hl));});
     if(idx>=0)return normH[idx];
   }
   return null;
@@ -847,14 +853,19 @@ document.getElementById('run-btn').addEventListener('click',async function(){
     setProg(4,'Analysing Odoo payments…');await sleep(200);
     const opR=op.rows,opRH=op.rawHeaders,opNH=op.headers;
     const pg=(cands)=>fc2(opRH,opNH,cands);
-    const PC={journal:pg(['Journal']),amtSgn:pg(['Amount Signed','amount_signed','Amount']),state:pg(['State','status','Payment Status']),payType:pg(['Payment Type','payment_type','Type'])};
+    const PC={journal:pg(['Journal']),amtSgn:pg(['Amount Signed','amount_signed','Amount']),state:pg(['State','status','Payment Status']),payType:pg(['Payment Type','payment_type','Type','نوع الدفعة','نوع الدفع'])};
+    // Auto-detect payment type column by scanning values for 'outbound'/'inbound' when header-based lookup fails
+    if(!PC.payType){
+      const autoCol=opNH.find(h=>{if(!h)return false;const vals=opR.slice(0,30).map(r=>(r[h]||'').toLowerCase().trim());return vals.some(v=>v==='outbound'||v==='inbound');});
+      if(autoCol)PC.payType=autoCol;
+    }
     const activeAmt=PC.amtSgn;
     const posted=PC.state?opR.filter(r=>{const s=(r[PC.state]||'').toLowerCase();return s==='posted'||s==='paid'||s===''||!s;}):opR;
     let oCashIn=0,oCashOut=0,oSpanIn=0,oVisaIn=0,oMasterIn=0,oNonCashIn=0,oNonCashOut=0;
     posted.forEach(r=>{
       let a=activeAmt?amt(r[activeAmt]):0;if(a===0)return;
-      // Odoo 19 may export outbound payments with a positive Amount Signed + Payment Type = outbound
-      if(PC.payType&&a>0){const pt=(r[PC.payType]||'').toLowerCase();if(pt==='outbound'||pt.includes('refund'))a=-a;}
+      // Odoo 19 may export outbound payments with a positive Amount Signed + Payment Type = outbound/inbound
+      if(PC.payType&&a>0){const pt=(r[PC.payType]||'').toLowerCase();if(pt==='outbound'||pt.includes('refund')||pt==='send money'||pt==='صادر')a=-a;}
       const jrn=(PC.journal?r[PC.journal]||'':'').toLowerCase();
       const isCash=jrn.includes('cash')||jrn.includes('نقد')||jrn.includes('صندوق');
       if(isCash){if(a>0)oCashIn+=a;else oCashOut+=Math.abs(a);}
