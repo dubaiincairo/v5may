@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>eZee ↔ Odoo Financial Check</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{
+  --bg-0:#0d0f12;--bg-1:#13161b;--bg-2:#1a1e26;--bg-3:#222730;
+  --border:#2e3545;--border-hi:#3d4860;
+  --t0:#e8eaf0;--t1:#9ba3b8;--t2:#606880;
+  --acc:#3d8ef0;--acc-dim:#1a3a6a;
+  --grn:#2ecc8a;--grn-dim:#0d3d28;--grn-t:#2ecc8a;
+  --amb:#f0a93d;--amb-dim:#3d2a0d;--amb-t:#f0a93d;
+  --red:#f05050;--red-dim:#3d1515;--red-t:#f07070;
+  --blu-dim:#0d2040;--blu-t:#6aabf5;
+  --r:8px;--rl:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'SF Mono','Fira Code',monospace;background:var(--bg-0);color:var(--t0);min-height:100vh;padding:2rem;max-width:1020px;margin:0 auto;}
+.hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:2rem;padding-bottom:1.5rem;border-bottom:.5px solid var(--border);}
+.htitle{font-size:15px;font-weight:600;}
+.hsub{font-size:12px;color:var(--t2);margin-top:4px;font-family:sans-serif;}
+.badge{font-size:10px;padding:3px 10px;border-radius:999px;background:var(--acc-dim);color:var(--acc);border:.5px solid var(--acc-dim);font-weight:600;white-space:nowrap;}
+.sl{font-size:10px;font-weight:600;color:var(--t2);text-transform:uppercase;letter-spacing:.1em;margin:1.5rem 0 .75rem;}
+select.inp{width:100%;height:42px;background:var(--bg-2);border:.5px solid var(--border);border-radius:var(--r);padding:0 14px;font-size:13px;color:var(--t0);font-family:sans-serif;outline:none;cursor:pointer;}
+select.inp:focus{border-color:var(--acc);}
+.date-block{background:var(--bg-1);border:.5px solid var(--border);border-radius:var(--rl);padding:1.25rem 1.5rem;}
+.date-row{display:grid;grid-template-columns:1fr 1fr;gap:24px;}
+.date-lbl{font-size:11px;font-weight:600;color:var(--t1);font-family:sans-serif;margin-bottom:9px;}
+.dfields{display:flex;gap:6px;align-items:flex-end;}
+.dfw{display:flex;flex-direction:column;align-items:center;gap:4px;}
+.dfw span{font-size:9px;color:var(--t2);text-transform:uppercase;letter-spacing:.07em;}
+.dfi{text-align:center;background:var(--bg-2);border:.5px solid var(--border);border-radius:var(--r);color:var(--t0);font-family:'SF Mono','Fira Code',monospace;outline:none;height:42px;font-size:16px;font-weight:700;transition:border-color .15s;}
+.dfi:focus{border-color:var(--acc);}
+.dfi.dd{width:50px;}.dfi.mm{width:50px;}.dfi.yy{width:72px;}
+.dfi::placeholder{color:var(--t2);font-size:12px;font-weight:400;}
+.dsep{font-size:20px;color:var(--border-hi);font-weight:600;padding-bottom:6px;}
+.dhint{font-size:11px;margin-top:8px;min-height:16px;font-family:sans-serif;}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.card{background:var(--bg-1);border:.5px solid var(--border);border-radius:var(--rl);padding:1.25rem 1.2rem;}
+.card-hd{font-size:12px;font-weight:700;display:flex;align-items:center;gap:8px;margin-bottom:16px;}
+.dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.dg{background:var(--grn);}.db{background:var(--acc);}
+.fi{margin-bottom:10px;}.fi:last-child{margin-bottom:0;}
+.fi label{font-size:11px;color:var(--t1);display:flex;align-items:center;gap:6px;margin-bottom:5px;font-family:sans-serif;flex-wrap:wrap;}
+.req{font-size:9px;font-weight:700;padding:2px 7px;border-radius:4px;background:rgba(240,80,80,.15);color:#f08080;border:.5px solid rgba(240,80,80,.3);flex-shrink:0;}
+.drop{border:.5px dashed var(--border-hi);border-radius:var(--r);padding:8px 12px;font-size:11px;color:var(--t2);cursor:pointer;background:var(--bg-2);display:flex;align-items:center;gap:8px;min-height:36px;position:relative;overflow:hidden;font-family:sans-serif;transition:all .15s;}
+.drop:hover{border-color:var(--acc);color:var(--t1);}
+.drop input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;font-size:0;}
+.drop.ok{border-style:solid;border-color:var(--grn);color:var(--grn-t);background:var(--grn-dim);}
+.drop.err{border-style:solid;border-color:var(--red);color:var(--red-t);background:var(--red-dim);}
+.di{font-size:14px;flex-shrink:0;font-weight:600;}
+.fn{font-size:11px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.drop-remove{display:none;position:absolute;right:8px;top:50%;transform:translateY(-50%);width:18px;height:18px;border-radius:50%;background:rgba(240,80,80,.25);border:.5px solid rgba(240,80,80,.5);color:#f08080;font-size:11px;font-weight:700;align-items:center;justify-content:center;cursor:pointer;z-index:10;line-height:1;transition:background .15s;}
+.drop-remove:hover{background:rgba(240,80,80,.55);}
+.drop.ok .drop-remove{display:flex;}
+.btn-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:1.5rem;}
+.btn{padding:13px;font-size:13px;font-weight:700;border-radius:var(--r);cursor:pointer;letter-spacing:.05em;font-family:'SF Mono','Fira Code',monospace;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;}
+.btn:disabled{opacity:.35;cursor:not-allowed;}
+.btn-validate{background:var(--bg-2);border:.5px solid var(--border-hi);color:var(--t1);}
+.btn-validate:hover:not(:disabled){background:var(--bg-3);border-color:var(--t1);color:var(--t0);}
+.btn-run{background:var(--acc-dim);border:.5px solid var(--acc);color:var(--acc);}
+.btn-run:hover:not(:disabled){background:#1e3f7a;}
+.pgwrap{display:none;margin-top:1.5rem;background:var(--bg-1);border:.5px solid var(--border);border-radius:var(--rl);padding:1.25rem;}
+.pgtitle{font-size:12px;font-weight:600;color:var(--t1);display:flex;justify-content:space-between;}
+.pgpct{color:var(--acc);font-weight:700;}
+.pgtrack{height:8px;background:var(--bg-3);border-radius:4px;overflow:hidden;margin:10px 0 8px;}
+.pgfill{height:100%;width:0%;background:linear-gradient(90deg,var(--acc),var(--grn));border-radius:4px;transition:width .35s ease;}
+.pgstep{font-size:11px;color:var(--t2);font-family:sans-serif;}
+.pgsteps{margin-top:12px;display:flex;flex-direction:column;gap:4px;}
+.psi{display:flex;align-items:center;gap:8px;font-size:11px;font-family:sans-serif;color:var(--t2);}
+.psi.done{color:var(--grn-t);}.psi.active{color:var(--t0);font-weight:600;}
+.psic{width:16px;height:16px;border-radius:50%;border:.5px solid var(--border-hi);display:flex;align-items:center;justify-content:center;font-size:9px;flex-shrink:0;background:var(--bg-3);}
+.psi.done .psic{background:var(--grn-dim);border-color:var(--grn);color:var(--grn-t);}
+.psi.active .psic{background:var(--acc-dim);border-color:var(--acc);color:var(--acc);}
+.pf-wrap{margin-top:1.5rem;display:none;}
+.pf-card{background:var(--bg-1);border:.5px solid var(--border);border-radius:var(--rl);padding:1.1rem 1.2rem;margin-bottom:12px;}
+.pf-hd{font-size:12px;font-weight:700;display:flex;align-items:center;gap:8px;margin-bottom:12px;justify-content:space-between;}
+.pf-hd-left{display:flex;align-items:center;gap:8px;}
+.pf-status{font-size:10px;font-weight:700;padding:3px 10px;border-radius:999px;border:.5px solid;}
+.pf-ok{background:var(--grn-dim);color:var(--grn-t);border-color:#1a5535;}
+.pf-warn{background:var(--amb-dim);color:var(--amb-t);border-color:#5a3a10;}
+.pf-fail{background:var(--red-dim);color:var(--red-t);border-color:#5a1a1a;}
+.pf-row{display:flex;align-items:flex-start;gap:8px;padding:5px 0;border-bottom:.5px solid var(--border);font-size:11px;font-family:sans-serif;}
+.pf-row:last-child{border-bottom:none;}
+.pf-icon{width:16px;flex-shrink:0;font-size:12px;margin-top:1px;}
+.pf-label{flex:1;color:var(--t1);line-height:1.5;}
+.pf-label strong{color:var(--t0);}
+.pf-sample{font-family:'SF Mono','Fira Code',monospace;color:var(--acc);font-size:10px;margin-left:4px;}
+.pf-summary{background:var(--bg-2);border:.5px solid var(--border);border-radius:var(--r);padding:10px 14px;font-size:12px;font-family:sans-serif;margin-bottom:12px;display:flex;align-items:center;gap:12px;}
+.pf-summary-ico{font-size:18px;}
+.results{margin-top:2rem;}
+.verdict{border-radius:var(--rl);padding:16px 20px;margin-bottom:1.5rem;display:flex;align-items:center;gap:16px;border:.5px solid;}
+.vp{background:var(--grn-dim);border-color:#1a6644;}
+.vw{background:var(--amb-dim);border-color:#6a4a1a;}
+.vf{background:var(--red-dim);border-color:#6a2020;}
+.vico{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:20px;flex-shrink:0;}
+.vip{background:var(--grn);color:#0a2a1a;}.viw{background:var(--amb);color:#2a1a05;}.vif{background:var(--red);color:#2a0808;}
+.vtt{font-size:14px;font-weight:600;}
+.vss{font-size:12px;color:var(--t1);margin-top:3px;font-family:sans-serif;}
+.scards{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-bottom:1.5rem;}
+.sc{background:var(--bg-2);border:.5px solid var(--border);border-radius:var(--r);padding:13px;}
+.scl{font-size:10px;color:var(--t2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.07em;}
+.scv{font-size:17px;font-weight:600;}
+.scs{font-size:10px;color:var(--t2);margin-top:3px;font-family:sans-serif;}
+.tabs{display:flex;gap:0;border-bottom:.5px solid var(--border);margin-bottom:1.5rem;flex-wrap:wrap;}
+.tab{font-size:12px;padding:9px 16px;cursor:pointer;color:var(--t2);border-bottom:2px solid transparent;margin-bottom:-.5px;transition:color .15s;white-space:nowrap;}
+.tab:hover{color:var(--t1);}
+.tab.active{color:var(--acc);border-bottom-color:var(--acc);font-weight:600;}
+.tc{display:none;}.tc.active{display:block;}
+.tbl{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:1.5rem;table-layout:fixed;}
+.tbl th{font-size:10px;font-weight:600;color:var(--t2);text-align:left;padding:7px 10px;border-bottom:.5px solid var(--border);text-transform:uppercase;letter-spacing:.07em;background:var(--bg-2);}
+.tbl td{padding:9px 10px;border-bottom:.5px solid var(--border);vertical-align:middle;word-break:break-word;font-family:sans-serif;font-size:12px;}
+.tbl tr:last-child td{border-bottom:none;}
+.tbl tr:hover td{background:rgba(255,255,255,.025);}
+.row-ok td{background:rgba(46,204,138,.04);}
+.row-warn td{background:rgba(240,169,61,.06);}
+.row-fail td{background:rgba(240,80,80,.07);}
+.row-missing td{background:rgba(240,80,80,.05);}
+.mn{font-family:'SF Mono','Fira Code',monospace!important;}
+.c0{color:var(--grn-t);font-weight:600;}.cw{color:var(--amb-t);font-weight:600;}.cf{color:var(--red-t);font-weight:600;}
+.pill{display:inline-flex;font-size:10px;font-weight:700;padding:3px 9px;border-radius:999px;border:.5px solid;white-space:nowrap;}
+.pg2{background:var(--grn-dim);color:var(--grn-t);border-color:#1a5535;}
+.pa{background:var(--amb-dim);color:var(--amb-t);border-color:#5a3a10;}
+.pr{background:var(--red-dim);color:var(--red-t);border-color:#5a1a1a;}
+.pb{background:var(--blu-dim);color:var(--blu-t);border-color:var(--acc-dim);}
+.pm{background:rgba(240,80,80,.2);color:#f08080;border-color:#5a1a1a;}
+.note{font-size:12px;color:var(--blu-t);background:var(--blu-dim);border-left:2px solid var(--acc);border-radius:0 var(--r) var(--r) 0;padding:9px 13px;margin-bottom:12px;font-family:sans-serif;line-height:1.6;}
+.err-box{background:var(--red-dim);border:.5px solid var(--red);border-radius:var(--r);padding:14px;font-size:12px;color:var(--red-t);font-family:sans-serif;line-height:1.7;}
+.err-box strong{display:block;margin-bottom:6px;}
+.res-filter{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center;}
+.res-filter input{height:34px;background:var(--bg-2);border:.5px solid var(--border);border-radius:var(--r);padding:0 12px;font-size:12px;color:var(--t0);font-family:sans-serif;outline:none;width:220px;}
+.res-filter input:focus{border-color:var(--acc);}
+.res-filter select{height:34px;background:var(--bg-2);border:.5px solid var(--border);border-radius:var(--r);padding:0 10px;font-size:12px;color:var(--t0);font-family:sans-serif;outline:none;cursor:pointer;}
+.res-count{font-size:11px;color:var(--t2);font-family:sans-serif;align-self:center;margin-left:auto;}
+.tbl-wrap{overflow-x:auto;}
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:var(--bg-1);}
+::-webkit-scrollbar-thumb{background:var(--border-hi);border-radius:3px;}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div>
+    <div class="htitle">eZee Absolute ↔ Odoo 19 — Financial Check</div>
+    <div class="hsub">Swiss Blue Group · eZee Absolute ↔ Odoo 19</div>
+  </div>
+  <div class="badge" id="prop-badge">Select property</div>
+</div>
+
+<div class="sl">Property</div>
+<select class="inp" id="prop-sel">
+  <option value="">— Select property —</option>
+  <option value="swiss1">SwissBlue Hotel — Jeddah</option>
+  <option value="swiss2">SwissBlue Apartment Hotel — Jazan</option>
+  <option value="swiss3">SwissBlue Serviced Apartments — Alsamer</option>
+  <option value="swiss4">SwissBlue Serviced Apartments — Alzahraa</option>
+  <option value="tulip">Tulip Alrawdah Serviced Apartments</option>
+  <option value="vinas">Vinas Riyadh Serviced Apartments</option>
+</select>
+
+<div class="sl">Date range</div>
+<div class="date-block">
+  <div class="date-row">
+    <div>
+      <div class="date-lbl">From</div>
+      <div class="dfields">
+        <div class="dfw"><input class="dfi dd" id="fd" maxlength="2" placeholder="DD" inputmode="numeric"><span>Day</span></div>
+        <div class="dsep">/</div>
+        <div class="dfw"><input class="dfi mm" id="fm" maxlength="2" placeholder="MM" inputmode="numeric"><span>Month</span></div>
+        <div class="dsep">/</div>
+        <div class="dfw"><input class="dfi yy" id="fy" maxlength="4" placeholder="YYYY" inputmode="numeric"><span>Year</span></div>
+      </div>
+      <div class="dhint" id="fh"></div>
+    </div>
+    <div>
+      <div class="date-lbl">To</div>
+      <div class="dfields">
+        <div class="dfw"><input class="dfi dd" id="td" maxlength="2" placeholder="DD" inputmode="numeric"><span>Day</span></div>
+        <div class="dsep">/</div>
+        <div class="dfw"><input class="dfi mm" id="tm" maxlength="2" placeholder="MM" inputmode="numeric"><span>Month</span></div>
+        <div class="dsep">/</div>
+        <div class="dfw"><input class="dfi yy" id="ty" maxlength="4" placeholder="YYYY" inputmode="numeric"><span>Year</span></div>
+      </div>
+      <div class="dhint" id="th"></div>
+    </div>
+  </div>
+</div>
+
+<div class="sl">Upload reports</div>
+<div class="two-col">
+  <div class="card">
+    <div class="card-hd"><span class="dot dg"></span>eZee Absolute FAS</div>
+    <div class="fi">
+      <label>Detail Revenue Report <span class="req">REQUIRED</span></label>
+      <div class="drop" id="z-esales"><span class="di">+</span><span class="fn" id="n-esales">CSV only</span><input type="file" accept=".csv,.txt" onchange="mf('esales',this)"><span class="drop-remove" onclick="rf(event,'esales')">✕</span></div>
+    </div>
+    <div class="fi">
+      <label>Daily Receipt Report <span class="req">REQUIRED</span></label>
+      <div class="drop" id="z-ereceipt"><span class="di">+</span><span class="fn" id="n-ereceipt">XLSX only</span><input type="file" accept=".xlsx" onchange="mf('ereceipt',this)"><span class="drop-remove" onclick="rf(event,'ereceipt')">✕</span></div>
+    </div>
+    <div class="fi">
+      <label>Advance Deposit Ledger <span class="req">REQUIRED</span></label>
+      <div class="drop" id="z-eadv"><span class="di">+</span><span class="fn" id="n-eadv">CSV only</span><input type="file" accept=".csv,.txt" onchange="mf('eadv',this)"><span class="drop-remove" onclick="rf(event,'eadv')">✕</span></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-hd"><span class="dot db"></span>Odoo 19 Enterprise</div>
+    <div class="fi">
+      <label>Journal Entry — account.move <span class="req">REQUIRED</span></label>
+      <div class="drop" id="z-ojnl"><span class="di">+</span><span class="fn" id="n-ojnl">CSV only</span><input type="file" accept=".csv,.txt" onchange="mf('ojnl',this)"><span class="drop-remove" onclick="rf(event,'ojnl')">✕</span></div>
+    </div>
+    <div class="fi">
+      <label>Payments — account.payment <span class="req">REQUIRED</span></label>
+      <div class="drop" id="z-opay"><span class="di">+</span><span class="fn" id="n-opay">CSV only</span><input type="file" accept=".csv,.txt" onchange="mf('opay',this)"><span class="drop-remove" onclick="rf(event,'opay')">✕</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="btn-row">
+  <button class="btn btn-validate" id="validate-btn">🔍&nbsp; Validate Files</button>
+  <button class="btn btn-run" id="run-btn" disabled>▶&nbsp; Run Financial Check</button>
+</div>
+
+<div class="pf-wrap" id="pf-wrap"></div>
+
+<div class="pgwrap" id="pgwrap">
+  <div class="pgtitle"><span>Running financial check</span><span class="pgpct" id="pgpct">0%</span></div>
+  <div class="pgtrack"><div class="pgfill" id="pgfill"></div></div>
+  <div class="pgstep" id="pgstep">Initialising…</div>
+  <div class="pgsteps" id="pgsteps"></div>
+</div>
+
+<div class="results" id="results"></div>
+
+<script>
+const PROPS={
+  swiss1:{label:'SwissBlue Hotel',city:'Jeddah'},
+  swiss2:{label:'SwissBlue Apartment Hotel',city:'Jazan'},
+  swiss3:{label:'SwissBlue Serviced Apartments',city:'Alsamer'},
+  swiss4:{label:'SwissBlue Serviced Apartments',city:'Alzahraa'},
+  tulip:{label:'Tulip Alrawdah',city:''},
+  vinas:{label:'Vinas Riyadh',city:''},
+};
+const FILES={};
+let PARSED={};
+
+document.getElementById('prop-sel').addEventListener('change',function(){
+  const p=PROPS[this.value];
+  document.getElementById('prop-badge').textContent=p?(p.city?p.label+' — '+p.city:p.label):'Select property';
+  resetValidation();
+});
+
+const p2=n=>String(n).padStart(2,'0');
+function getDate(pfx){
+  const dd=document.getElementById(pfx+'d').value.trim();
+  const mm=document.getElementById(pfx+'m').value.trim();
+  const yy=document.getElementById(pfx+'y').value.trim();
+  if(!dd||!mm||!yy||yy.length<4)return null;
+  const d=new Date(+yy,+mm-1,+dd);
+  if(isNaN(d)||d.getDate()!==+dd||d.getMonth()!==+mm-1)return null;
+  return d;
+}
+function fmtD(d){return d?d.toLocaleDateString('en-GB',{day:'2-digit',month:'long',year:'numeric'}):''}
+function validateDates(){
+  const f=getDate('f'),t=getDate('t');
+  const fh=document.getElementById('fh'),th=document.getElementById('th');
+  fh.style.color=f?'var(--grn-t)':'';fh.textContent=f?'✓ '+fmtD(f):'';
+  th.style.color=t?'var(--grn-t)':'';th.textContent=t?'✓ '+fmtD(t):'';
+  if(f&&t&&f>t){th.textContent='✗ Must be after From';th.style.color='var(--red-t)';}
+}
+['fd','fm','fy','td','tm','ty'].forEach(id=>{
+  document.getElementById(id).addEventListener('input',function(){
+    this.value=this.value.replace(/\D/g,'');
+    const nx={fd:'fm',fm:'fy',td:'tm',tm:'ty'};
+    if(nx[id]&&this.value.length===2)document.getElementById(nx[id]).focus();
+    validateDates();
+    resetValidation();
+  });
+});
+
+const DLABELS={esales:'CSV only',ereceipt:'XLSX only',eadv:'CSV only',ojnl:'CSV only',opay:'CSV only'};
+function mf(k,inp){
+  if(!inp.files.length)return;
+  FILES[k]=inp.files[0];
+  const n=inp.files[0].name;
+  document.getElementById('n-'+k).textContent=n.length>32?n.slice(0,30)+'…':n;
+  const el=document.getElementById('z-'+k);
+  el.classList.remove('err');el.classList.add('ok');
+  el.querySelector('.di').textContent='✓';
+  resetValidation();
+}
+function rf(e,k){
+  e.preventDefault();e.stopPropagation();
+  delete FILES[k];delete PARSED[k];
+  const el=document.getElementById('z-'+k);
+  el.classList.remove('ok','err');
+  el.querySelector('.di').textContent='+';
+  document.getElementById('n-'+k).textContent=DLABELS[k]||'';
+  const inp=el.querySelector('input[type=file]');if(inp)inp.value='';
+  resetValidation();
+}
+function resetValidation(){
+  document.getElementById('run-btn').disabled=true;
+  document.getElementById('pf-wrap').style.display='none';
+  document.getElementById('pf-wrap').innerHTML='';
+  PARSED={};
+}
+
+function parseCSV(text){
+  const fl=text.split(/\r?\n/)[0]||'';
+  const delim=fl.split('\t').length>fl.split(',').length?'\t':',';
+  const lines=text.split(/\r?\n/).filter(l=>l.trim());
+  if(!lines.length)return{headers:[],rows:[],rawHeaders:[]};
+  const parse=line=>{
+    const cols=[];let cur='',inQ=false;
+    for(let i=0;i<line.length;i++){
+      const c=line[i];
+      if(c==='"'){if(inQ&&line[i+1]==='"'){cur+='"';i++;}else inQ=!inQ;}
+      else if(c===delim&&!inQ){cols.push(cur.trim());cur='';}
+      else cur+=c;
+    }
+    cols.push(cur.trim());return cols;
+  };
+  const rawH=parse(lines[0]);
+  const headers=rawH.map(h=>h.toLowerCase().replace(/[\s\/\-\.()%]+/g,'_').replace(/[^a-z0-9_\u0600-\u06ff]/g,'').replace(/_+/g,'_').replace(/^_|_$/g,''));
+  const rows=lines.slice(1).map(l=>{
+    const vals=parse(l);
+    const obj={};
+    rawH.forEach((h,i)=>{obj['_r_'+i]=(vals[i]||'').trim();});
+    headers.forEach((h,i)=>{obj[h]=(vals[i]||'').trim();});
+    return obj;
+  }).filter(r=>headers.some(h=>r[h]&&r[h].trim()));
+  return{headers,rows,rawHeaders:rawH};
+}
+function readText(file){
+  return new Promise((res,rej)=>{
+    const r=new FileReader();
+    r.onload=e=>res(e.target.result);
+    r.onerror=()=>rej(new Error('Cannot read '+file.name));
+    r.readAsText(file,'UTF-8');
+  });
+}
+function readXlsx(file){
+  return new Promise((res,rej)=>{
+    const r=new FileReader();
+    r.onload=e=>{
+      try{const wb=XLSX.read(e.target.result,{type:'array'});res(wb);}
+      catch(err){rej(err);}
+    };
+    r.onerror=()=>rej(new Error('Cannot read '+file.name));
+    r.readAsArrayBuffer(file);
+  });
+}
+function amt(v){
+  if(!v&&v!==0)return 0;
+  v=String(v).trim().replace(/SAR|,|\s/gi,'');
+  const neg=v.startsWith('(')||v.startsWith('-');
+  const n=parseFloat(v.replace(/[^0-9.]/g,''));
+  return isNaN(n)?0:(neg?-n:n);
+}
+function sar(n){
+  const a=Math.abs(n);
+  return(n<0?'− ':'')+'SAR '+a.toLocaleString('en-SA',{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+
+function findCol(rawHeaders,normHeaders,candidates){
+  for(const c of candidates){
+    const cn=c.toLowerCase().replace(/[\s\/\-\.()%]+/g,'_').replace(/[^a-z0-9_\u0600-\u06ff]/g,'').replace(/_+/g,'_').replace(/^_|_$/g,'');
+    const idx=normHeaders.indexOf(cn);
+    if(idx>=0)return{key:normHeaders[idx],raw:rawHeaders[idx],found:true};
+  }
+  for(const c of candidates){
+    const cl=c.toLowerCase();
+    const idx=rawHeaders.findIndex(h=>h.toLowerCase().includes(cl)||cl.includes(h.toLowerCase()));
+    if(idx>=0)return{key:normHeaders[idx],raw:rawHeaders[idx],found:true};
+  }
+  return{key:null,raw:null,found:false};
+}
+
+function sample(rows,key,n=1){
+  const vals=[];
+  for(const r of rows){
+    if(r[key]&&r[key].trim()&&r[key].trim()!=='0'&&r[key].trim()!=='0.00'){
+      vals.push(r[key].trim());
+      if(vals.length>=n)break;
+    }
+  }
+  return vals.join(' / ')||'(empty)';
+}
+
+async function runPreflight(){
+  const panel=document.getElementById('pf-wrap');
+  panel.style.display='block';
+  panel.innerHTML=`<div style="font-size:12px;color:var(--t2);font-family:sans-serif;padding:8px 0;">Validating files…</div>`;
+  let totalCritical=0;
+  let html='';
+
+  {
+    const f=FILES['esales'];
+    let rows=[],rawH=[],normH=[],issues=[];
+    try{
+      const text=await readText(f);
+      const parsed=parseCSV(text);
+      rows=parsed.rows;rawH=parsed.rawHeaders;normH=parsed.headers;
+      PARSED['esales']=parsed;
+    }catch(e){issues.push({t:'❌',msg:'Failed to parse file: '+e.message,critical:true});}
+    const fc=(cands)=>findCol(rawH,normH,cands);
+    const checks=[
+      {label:'Folio No',cands:['Folio No','Folio Number','folio_no'],critical:true},
+      {label:'Reservation No',cands:['Reservation No','Res No','reservation_no'],critical:true},
+      {label:'Guest Name',cands:['Guest Name','guest_name'],critical:true},
+      {label:'Room',cands:['Room','room_no'],critical:false},
+      {label:'Arrival',cands:['Arrival','arrival_date','checkin'],critical:false},
+      {label:'Total (SAR)(Inclusive of Tax)',cands:['Total (SAR) (Inclusive of Tax)','Total (SAR)(Inclusive','total_sar'],critical:true},
+      {label:'VAT15% (SAR)',cands:['VAT15% (SAR)','VAT15%','vat15'],critical:true},
+      {label:'municipality 2.5% (SAR)',cands:['municipality 2.5% (SAR)','municipality 2.5%','municipality'],critical:true},
+      {label:'All Room Charges (SAR)(Exclusive of Tax)',cands:['All Room Charges  (SAR) (Exclusive of Tax)','All Room Charges (SAR)','all_room_charges'],critical:true},
+      {label:'Discount (SAR)',cands:['Discount (SAR)','Discount'],critical:false},
+      {label:'Adjustment (SAR)',cands:['Adjustment (SAR)','Adjustment'],critical:false},
+      {label:'Cash Collected (SAR)',cands:['Cash Collected (SAR)','Cash Collected'],critical:true},
+      {label:'Cash Refund (SAR)',cands:['Cash Refund  (SAR)','Cash Refund'],critical:false},
+      {label:'SPAN CARD Collected (SAR)',cands:['SPAN CARD Collected (SAR)','SPAN CARD Collected'],critical:true},
+      {label:'VISA CARD Collected (SAR)',cands:['VISA CARD Collected (SAR)','VISA CARD Collected'],critical:true},
+      {label:'MASTER CARD Collected (SAR)',cands:['MASTER CARD Collected (SAR)','MASTER CARD Collected'],critical:false},
+      {label:'Bank Transfer Collected (SAR)',cands:['Bank Transfer Collected (SAR)','Bank Transfer Collected'],critical:false},
+      {label:'GCCNET Collected (SAR)',cands:['GCCNET Collected (SAR)','GCCNET Collected'],critical:false},
+      {label:'American Express Collected',cands:['American Express Collected (SAR)','American Express Collected'],critical:false},
+    ];
+    checks.forEach(c=>{
+      const r=fc(c.cands);
+      if(r.found){
+        const sv=sample(rows,r.key);
+        issues.push({t:'✅',msg:`<strong>${c.label}</strong> → detected as <span class="pf-sample">${r.raw}</span> · sample: <span class="pf-sample">${sv}</span>`,critical:false});
+      }else{
+        issues.push({t:c.critical?'❌':'⚠️',msg:`<strong>${c.label}</strong> — NOT FOUND (tried: ${c.cands[0]})`,critical:c.critical});
+        if(c.critical)totalCritical++;
+      }
+    });
+    if(rows.length>0)issues.unshift({t:'✅',msg:`<strong>${rows.length} rows</strong> parsed successfully`,critical:false});
+    else{issues.unshift({t:'❌',msg:'<strong>No data rows found</strong> — file may be empty',critical:true});totalCritical++;}
+    const cardStatus=issues.some(i=>i.critical&&i.t==='❌')?'pf-fail':issues.some(i=>i.t==='⚠️')?'pf-warn':'pf-ok';
+    const cardLabel=cardStatus==='pf-fail'?'CRITICAL ERRORS':cardStatus==='pf-warn'?'WARNINGS':'ALL GOOD';
+    html+=buildPfCard('eZee Detail Revenue Report',cardStatus,cardLabel,issues);
+  }
+
+  {
+    const f=FILES['ereceipt'];
+    let issues=[];
+    try{
+      const wb=await readXlsx(f);
+      const sheetName=wb.SheetNames[0];
+      const ws=wb.Sheets[sheetName];
+      const raw=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
+      const isDataRow=row=>{
+        const col0=String(row[0]||'').trim();
+        const col3=row[3];
+        const hasDate=/^\d{2}\/\d{2}\/\d{4}$/.test(col0);
+        const hasAmt=col3!==null&&col3!==''&&!isNaN(Number(col3));
+        return hasDate&&hasAmt;
+      };
+      const sections={};
+      let currentMode=null;
+      let totalRows=0;
+      for(const row of raw){
+        if(row[0]==='Payment Mode'){currentMode=row[1]||'Unknown';sections[currentMode]=[];}
+        else if(currentMode&&isDataRow(row)){sections[currentMode].push(row);totalRows++;}
+      }
+      const modes=Object.keys(sections);
+      issues.push({t:'✅',msg:`<strong>${totalRows} receipt rows</strong> across ${modes.length} payment modes`,critical:false});
+      modes.forEach(m=>{
+        const rows=sections[m];
+        const inn=rows.reduce((a,r)=>a+(r[3]>0?r[3]:0),0);
+        const out=rows.reduce((a,r)=>a+(r[3]<0?Math.abs(r[3]):0),0);
+        issues.push({t:'ℹ️',msg:`<strong>${m}</strong> — ${rows.length} rows · in: <span class="pf-sample">${inn.toLocaleString('en-SA',{minimumFractionDigits:2})}</span> · out: <span class="pf-sample">${out.toLocaleString('en-SA',{minimumFractionDigits:2})}</span>`,critical:false});
+      });
+      const hasCash=modes.some(m=>/cash/i.test(m));
+      if(!hasCash)issues.push({t:'⚠️',msg:'No Cash payment mode found',critical:false});
+      PARSED['ereceipt']={sections,raw};
+    }catch(e){
+      issues.push({t:'❌',msg:'Failed to parse XLSX: '+e.message,critical:true});
+      totalCritical++;
+    }
+    const cardStatus=issues.some(i=>i.critical&&i.t==='❌')?'pf-fail':issues.some(i=>i.t==='⚠️')?'pf-warn':'pf-ok';
+    const cardLabel=cardStatus==='pf-fail'?'CRITICAL ERRORS':cardStatus==='pf-warn'?'WARNINGS':'ALL GOOD';
+    html+=buildPfCard('eZee Daily Receipt Report',cardStatus,cardLabel,issues);
+  }
+
+  {
+    const f=FILES['eadv'];
+    let rows=[],rawH=[],normH=[],issues=[];
+    let titleRow='';
+    try{
+      const text=await readText(f);
+      const allLines=text.split(/\r?\n/).filter(l=>l.trim());
+      titleRow=allLines[0]||'';
+      const body=allLines.slice(1).join('\n');
+      const parsed=parseCSV(body);
+      rows=parsed.rows;rawH=parsed.rawHeaders;normH=parsed.headers;
+      PARSED['eadv']={...parsed,titleRow};
+    }catch(e){issues.push({t:'❌',msg:'Failed to parse: '+e.message,critical:true});}
+    issues.push({t:'ℹ️',msg:`Row 1 skipped (title row): <span class="pf-sample">${titleRow.slice(0,60)}</span>`,critical:false});
+    if(rows.length>0)issues.push({t:'✅',msg:`<strong>${rows.length} rows</strong> parsed after skip`,critical:false});
+    else{issues.push({t:'❌',msg:'No data rows found after skip',critical:true});totalCritical++;}
+    const fc=(cands)=>findCol(rawH,normH,cands);
+    const checks=[
+      {label:'Date',cands:['Date'],critical:true},
+      {label:'Guest Name',cands:['Guest Name','guest_name'],critical:true},
+      {label:'Ref. No',cands:['Ref. No','Ref No','ref_no','Reference Number','Receipt No'],critical:true},
+      {label:'Reference (Description)',cands:['Reference (Description)','Description','Reference'],critical:true},
+      {label:'Arrival Date',cands:['Arrival Date','Arrival','arrival'],critical:false},
+      {label:'Departure Date',cands:['Departure Date','Departure','departure'],critical:false},
+      {label:'Payment Type',cands:['Payment Type','payment_type'],critical:false},
+      {label:'Credits',cands:['Credits','Credit','credit'],critical:true},
+      {label:'Debits',cands:['Debits','Debit','debit'],critical:true},
+      {label:'Balance',cands:['Balance','balance'],critical:false},
+    ];
+    checks.forEach(c=>{
+      const r=fc(c.cands);
+      if(r.found){
+        const sv=sample(rows,r.key);
+        issues.push({t:'✅',msg:`<strong>${c.label}</strong> → <span class="pf-sample">${r.raw}</span> · sample: <span class="pf-sample">${sv}</span>`,critical:false});
+        if(c.label==='Reference (Description)'){
+          const descSample=sample(rows,r.key);
+          const hasFol=/FOL\d+/i.test(descSample);
+          const hasRsv=/RSV\d+/i.test(descSample);
+          issues.push({t:hasFol?'✅':'⚠️',msg:`FOL extraction: ${hasFol?'✓ found in sample':'⚠ not found — check description format'}`,critical:!hasFol});
+          issues.push({t:hasRsv?'✅':'⚠️',msg:`RSV extraction: ${hasRsv?'✓ found in sample':'⚠ not found'}`,critical:false});
+          if(!hasFol)totalCritical++;
+        }
+      }else{
+        issues.push({t:c.critical?'❌':'⚠️',msg:`<strong>${c.label}</strong> — NOT FOUND`,critical:c.critical});
+        if(c.critical)totalCritical++;
+      }
+    });
+    const cardStatus=issues.some(i=>i.critical&&i.t==='❌')?'pf-fail':issues.some(i=>i.t==='⚠️')?'pf-warn':'pf-ok';
+    const cardLabel=cardStatus==='pf-fail'?'CRITICAL ERRORS':cardStatus==='pf-warn'?'WARNINGS':'ALL GOOD';
+    html+=buildPfCard('eZee Advance Deposit Ledger',cardStatus,cardLabel,issues);
+  }
+
+  {
+    const f=FILES['ojnl'];
+    let rows=[],rawH=[],normH=[],issues=[];
+    try{
+      const text=await readText(f);
+      const parsed=parseCSV(text);
+      rows=parsed.rows;rawH=parsed.rawHeaders;normH=parsed.headers;
+      PARSED['ojnl']=parsed;
+    }catch(e){issues.push({t:'❌',msg:'Failed to parse: '+e.message,critical:true});}
+    if(rows.length>0)issues.push({t:'✅',msg:`<strong>${rows.length} rows</strong> parsed`,critical:false});
+    else{issues.push({t:'❌',msg:'No data rows found',critical:true});totalCritical++;}
+    const fc=(cands)=>findCol(rawH,normH,cands);
+    const checks=[
+      {label:'Number',cands:['Number'],critical:false},
+      {label:'Folio Number',cands:['Folio Number','folio_number','folio'],critical:true},
+      {label:'Invoice Partner Display Name',cands:['Invoice Partner Display Name','partner','customer'],critical:false},
+      {label:'Invoice/Bill Date',cands:['Invoice/Bill Date','Invoice Date','date'],critical:false},
+      {label:'Untaxed Amount Signed Currency',cands:['Untaxed Amount Signed Currency','Untaxed Amount','untaxed'],critical:true},
+      {label:'Total in Currency Signed',cands:['Total in Currency Signed','Total','total'],critical:true},
+      {label:'Status In Payment',cands:['Status In Payment','Status','State','status'],critical:false},
+    ];
+    checks.forEach(c=>{
+      const r=fc(c.cands);
+      if(r.found){
+        const sv=sample(rows,r.key);
+        issues.push({t:'✅',msg:`<strong>${c.label}</strong> → <span class="pf-sample">${r.raw}</span> · sample: <span class="pf-sample">${sv}</span>`,critical:false});
+        if(c.label==='Folio Number'){
+          const folSample=sample(rows,r.key);
+          const hasFol=/FOL\d+/i.test(folSample);
+          issues.push({t:hasFol?'✅':'⚠️',msg:`Folio format check: <span class="pf-sample">${folSample}</span> — ${hasFol?'matches FOL prefix ✓':'⚠ unexpected format — will not match eZee'}`,critical:!hasFol});
+          if(!hasFol)totalCritical++;
+        }
+      }else{
+        issues.push({t:c.critical?'❌':'⚠️',msg:`<strong>${c.label}</strong> — NOT FOUND`,critical:c.critical});
+        if(c.critical)totalCritical++;
+      }
+    });
+    const cardStatus=issues.some(i=>i.critical&&i.t==='❌')?'pf-fail':issues.some(i=>i.t==='⚠️')?'pf-warn':'pf-ok';
+    const cardLabel=cardStatus==='pf-fail'?'CRITICAL ERRORS':cardStatus==='pf-warn'?'WARNINGS':'ALL GOOD';
+    html+=buildPfCard('Odoo Journal Entry — account.move',cardStatus,cardLabel,issues);
+  }
+
+  {
+    const f=FILES['opay'];
+    let rows=[],rawH=[],normH=[],issues=[];
+    try{
+      const text=await readText(f);
+      const parsed=parseCSV(text);
+      rows=parsed.rows;rawH=parsed.rawHeaders;normH=parsed.headers;
+      PARSED['opay']=parsed;
+    }catch(e){issues.push({t:'❌',msg:'Failed to parse: '+e.message,critical:true});}
+    if(rows.length>0)issues.push({t:'✅',msg:`<strong>${rows.length} rows</strong> parsed`,critical:false});
+    else{issues.push({t:'❌',msg:'No data rows found',critical:true});totalCritical++;}
+    const fc=(cands)=>findCol(rawH,normH,cands);
+    const checks=[
+      {label:'Date',cands:['Date'],critical:false},
+      {label:'Number',cands:['Number'],critical:false},
+      {label:'Receipt Number',cands:['Receipt Number','receipt_number','receipt'],critical:false},
+      {label:'Journal',cands:['Journal'],critical:true},
+      {label:'Customer/Vendor',cands:['Customer/Vendor','Customer','partner'],critical:false},
+      {label:'Amount Signed',cands:['Amount Signed','amount_signed'],critical:true},
+      {label:'Amount Company Currency Signed',cands:['Amount Company Currency Signed','amount_company'],critical:false},
+      {label:'State',cands:['State','status'],critical:false},
+    ];
+    checks.forEach(c=>{
+      const r=fc(c.cands);
+      if(r.found){
+        const sv=sample(rows,r.key,3);
+        issues.push({t:'✅',msg:`<strong>${c.label}</strong> → <span class="pf-sample">${r.raw}</span> · samples: <span class="pf-sample">${sv}</span>`,critical:false});
+        if(c.label==='Journal'){
+          const unique=[...new Set(rows.map(row=>row[r.key]).filter(v=>v&&v.trim()))].slice(0,10);
+          issues.push({t:'ℹ️',msg:`Journal unique values: <span class="pf-sample">${unique.join(' · ')}</span>`,critical:false});
+          const hasArabicCash=unique.some(v=>v.includes('نقد'));
+          const hasEnglishCash=unique.some(v=>/cash/i.test(v));
+          const hasSandooq=unique.some(v=>v.includes('صندوق'));
+          if(hasArabicCash)issues.push({t:'ℹ️',msg:`Arabic cash journal detected (<span class="pf-sample">نقد</span>) — parser will handle correctly`,critical:false});
+          else if(hasEnglishCash)issues.push({t:'✅',msg:`English cash journal detected`,critical:false});
+          else if(hasSandooq)issues.push({t:'ℹ️',msg:`Cash journal detected (<span class="pf-sample">صندوق</span>) — parser will handle correctly`,critical:false});
+        }
+        if(c.label==='Amount Signed'){
+          const posCount=rows.filter(row=>amt(row[r.key])>0).length;
+          const negCount=rows.filter(row=>amt(row[r.key])<0).length;
+          issues.push({t:'✅',msg:`Direction check: <span class="pf-sample">${posCount} inbound</span> (positive) · <span class="pf-sample">${negCount} outbound</span> (negative)`,critical:false});
+        }
+      }else{
+        issues.push({t:c.critical?'❌':'⚠️',msg:`<strong>${c.label}</strong> — NOT FOUND`,critical:c.critical});
+        if(c.critical)totalCritical++;
+      }
+    });
+    const cardStatus=issues.some(i=>i.critical&&i.t==='❌')?'pf-fail':issues.some(i=>i.t==='⚠️')?'pf-warn':'pf-ok';
+    const cardLabel=cardStatus==='pf-fail'?'CRITICAL ERRORS':cardStatus==='pf-warn'?'WARNINGS':'ALL GOOD';
+    html+=buildPfCard('Odoo Payments — account.payment',cardStatus,cardLabel,issues);
+  }
+
+  const summaryHtml=totalCritical===0
+    ?`<div class="pf-summary"><span class="pf-summary-ico">✅</span><span style="font-family:sans-serif;color:var(--grn-t)"><strong>All files validated successfully.</strong> Run Financial Check is now enabled.</span></div>`
+    :`<div class="pf-summary" style="border-color:var(--red);background:var(--red-dim)"><span class="pf-summary-ico">❌</span><span style="font-family:sans-serif;color:var(--red-t)"><strong>${totalCritical} critical error${totalCritical>1?'s':''} found.</strong> Fix the issues above before running the financial check.</span></div>`;
+  panel.innerHTML=summaryHtml+html;
+  if(totalCritical===0)document.getElementById('run-btn').disabled=false;
+  else document.getElementById('run-btn').disabled=true;
+}
+
+function buildPfCard(title,statusCls,statusLabel,issues){
+  const rows=issues.map(i=>`<div class="pf-row"><span class="pf-icon">${i.t}</span><span class="pf-label">${i.msg}</span></div>`).join('');
+  return`<div class="pf-card"><div class="pf-hd"><div class="pf-hd-left"><span style="font-family:sans-serif">${title}</span></div><span class="pf-status ${statusCls}">${statusLabel}</span></div>${rows}</div>`;
+}
+
+document.getElementById('validate-btn').addEventListener('click',async function(){
+  const required=['esales','ereceipt','eadv','ojnl','opay'];
+  const missing=required.filter(k=>!FILES[k]);
+  if(missing.length){
+    missing.forEach(k=>document.getElementById('z-'+k).classList.add('err'));
+    const nm={esales:'eZee Detail Revenue Report',ereceipt:'eZee Daily Receipt Report',eadv:'eZee Advance Deposit Ledger',ojnl:'Odoo Journal Entry',opay:'Odoo Payments'};
+    alert('Please upload all required files first:\n'+missing.map(k=>'• '+nm[k]).join('\n'));
+    return;
+  }
+  this.disabled=true;
+  this.textContent='🔍  Validating…';
+  try{await runPreflight();}
+  catch(e){alert('Validation error: '+e.message);}
+  finally{this.disabled=false;this.innerHTML='🔍&nbsp; Re-validate Files';}
+});
+
+const STEPS=['Analysing eZee revenue','Building eZee folio map','Analysing Odoo invoices','Building Odoo folio map','Analysing Odoo payments','Matching folios','Running financial checks','Building report'];
+function showProg(){
+  document.getElementById('pgwrap').style.display='block';
+  document.getElementById('pgsteps').innerHTML=STEPS.map((s,i)=>`<div class="psi" id="ps${i}"><div class="psic" id="pi${i}">○</div>${s}</div>`).join('');
+  setProg(0,STEPS[0]);
+}
+function setProg(idx,label){
+  const pct=Math.round(idx/STEPS.length*100);
+  document.getElementById('pgfill').style.width=pct+'%';
+  document.getElementById('pgpct').textContent=pct+'%';
+  document.getElementById('pgstep').textContent=label||'';
+  STEPS.forEach((_,i)=>{
+    const el=document.getElementById('ps'+i),ic=document.getElementById('pi'+i);
+    if(!el)return;
+    el.className='psi'+(i<idx?' done':i===idx?' active':'');
+    ic.textContent=i<idx?'✓':i===idx?'▶':'○';
+  });
+}
+function hideProg(){document.getElementById('pgwrap').style.display='none';}
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+
+function fc2(rawH,normH,cands){
+  for(const c of cands){
+    const cn=c.toLowerCase().replace(/[\s\/\-\.()%]+/g,'_').replace(/[^a-z0-9_\u0600-\u06ff]/g,'').replace(/_+/g,'_').replace(/^_|_$/g,'');
+    const idx=normH.indexOf(cn);
+    if(idx>=0)return normH[idx];
+  }
+  for(const c of cands){
+    const cl=c.toLowerCase();
+    const idx=rawH.findIndex(h=>h.toLowerCase().includes(cl)||cl.includes(h.toLowerCase()));
+    if(idx>=0)return normH[idx];
+  }
+  return null;
+}
+
+document.getElementById('run-btn').addEventListener('click',async function(){
+  const propKey=document.getElementById('prop-sel').value;
+  const fDate=getDate('f'),tDate=getDate('t');
+  if(!propKey){alert('Please select a property.');return;}
+  if(!fDate||!tDate){alert('Please enter valid dates.');return;}
+  if(fDate>tDate){alert('"From" must be before "To".');return;}
+  if(!PARSED['esales']||!PARSED['ereceipt']||!PARSED['ojnl']||!PARSED['opay']){alert('Please run "Validate Files" first.');return;}
+
+  const prop=PROPS[propKey];
+  const fromStr=p2(fDate.getDate())+'/'+p2(fDate.getMonth()+1)+'/'+fDate.getFullYear();
+  const toStr=p2(tDate.getDate())+'/'+p2(tDate.getMonth()+1)+'/'+tDate.getFullYear();
+  this.disabled=true;
+  document.getElementById('results').innerHTML='';
+  showProg();
+
+  try{
+    const es=PARSED['esales'];
+    const er=PARSED['ereceipt'];
+    const oj=PARSED['ojnl'];
+    const op=PARSED['opay'];
+
+    setProg(0,'Analysing eZee revenue…');await sleep(200);
+    const srKey=es.headers[0];
+    const esR=es.rows.filter(r=>{
+      const v1=(r[srKey]||'').trim();
+      const v2=(r['_r_0']||'').trim();
+      return!/(grand\s*total|total)/i.test(v1)&&!/(grand\s*total|total)/i.test(v2);
+    }),esRH=es.rawHeaders,esNH=es.headers;
+    const g=(cands)=>fc2(esRH,esNH,cands);
+
+    const C={
+      folio:g(['Folio No','Folio Number']),res:g(['Reservation No','Res No']),guest:g(['Guest Name']),room:g(['Room']),arrival:g(['Arrival']),
+      roomChg:g(['All Room Charges  (SAR) (Exclusive of Tax)','All Room Charges (SAR)']),muni:g(['municipality 2.5% (SAR)','municipality 2.5%','municipality']),
+      vat:g(['VAT15% (SAR)','VAT15%']),disc:g(['Discount (SAR)','Discount']),adj:g(['Adjustment (SAR)','Adjustment']),
+      total:g(['Total (SAR) (Inclusive of Tax)','Total (SAR)(Inclusive']),
+      cashIn:g(['Cash Collected (SAR)','Cash Collected']),cashRef:g(['Cash Refund  (SAR)','Cash Refund (SAR)','Cash Refund']),
+      spanIn:g(['SPAN CARD Collected (SAR)','SPAN CARD Collected']),spanRef:g(['SPAN CARD Refund  (SAR)','SPAN CARD Refund']),
+      visaIn:g(['VISA CARD Collected (SAR)','VISA CARD Collected']),visaRef:g(['VISA CARD Refund  (SAR)','VISA CARD Refund']),
+      masterIn:g(['MASTER CARD Collected (SAR)','MASTER CARD Collected']),masterRef:g(['MASTER CARD Refund  (SAR)','MASTER CARD Refund']),
+      gccIn:g(['GCCNET Collected (SAR)','GCCNET Collected']),gccRef:g(['GCCNET Refund  (SAR)','GCCNET Refund']),
+      maestroIn:g(['MAESTRO Collected (SAR)','MAESTRO Collected']),amexIn:g(['American Express Collected (SAR)','American Express Collected']),
+      bankIn:g(['Bank Transfer Collected (SAR)','Bank Transfer Collected']),bankRef:g(['Bank Transfer Refund  (SAR)','Bank Transfer Refund']),
+      ownerIn:g(['Owner Company Collected (SAR)','Owner Company Collected']),
+    };
+
+    setProg(1,'Building eZee folio map…');await sleep(200);
+    const extraColDefs=[
+      g(['Breakfast Revenue (SAR) (Exclusive of Tax)','Breakfast Revenue']),g(['Extra Bed Revenue (SAR) (Exclusive of Tax)','Extra Bed Revenue']),
+      g(['Laundry Revenue (SAR) (Exclusive of Tax)','Laundry Revenue']),g(['Room Service (SAR) (Exclusive of Tax)','Room Service (SAR)','Room Service']),
+      g(['Mini Bar Revenue (SAR) (Exclusive of Tax)','Mini Bar Revenue']),g(['channel (SAR) (Exclusive of Tax)','channel']),
+      g(['Coffee Shop revenue (SAR) (Exclusive of Tax)','Coffee Shop revenue','Coffee Shop']),g(['Dinner Revenue (SAR) (Exclusive of Tax)','Dinner Revenue']),
+      g(['Early Check In Fees (SAR) (Exclusive of Tax)','Early Check In Fees','Early Check In']),g(['Late Checkout Charges (SAR) (Exclusive of Tax)','Late Checkout Charges']),
+      g(['Late Check Out Fees (SAR) (Exclusive of Tax)','Late Check Out Fees']),g(['Extra Breakfast (SAR) (Exclusive of Tax)','Extra Breakfast']),
+      g(['IFTAR (SAR) (Exclusive of Tax)','IFTAR']),g(['Launch Revenue (SAR) (Exclusive of Tax)','Launch Revenue']),
+      g(['Massage (SAR) (Exclusive of Tax)','Massage']),g(['Meeting Room (SAR) (Exclusive of Tax)','Meeting Room (SAR)','Meeting Room']),
+      g(['Meeting With Coffee Break (SAR) (Exclusive of Tax)','Meeting With Coffee Break','Meeting With Coffee']),g(['Misclinus (SAR) (Exclusive of Tax)','Misclinus']),
+      g(['Open Food (SAR) (Exclusive of Tax)','Open Food']),g(['Transportation (SAR) (Exclusive of Tax)','Transportation']),
+      g(['Cancellation Revenue (SAR) (Exclusive of Tax)','Cancellation Revenue']),g(['No Show Revenue (SAR) (Exclusive of Tax)','No Show Revenue']),
+      g(['Day Use Charges (SAR) (Exclusive of Tax)','Day Use Charges','Day Use']),g(['Assets Damage (SAR) (Exclusive of Tax)','Assets Damage']),
+      g(['Banquet (SAR) (Exclusive of Tax)','Banquet']),
+    ].filter(Boolean);
+
+    const ezFolioMap=new Map();
+    esR.forEach(r=>{
+      const fol=(C.folio?r[C.folio]:'').trim();
+      if(!fol)return;
+      const extraSum=extraColDefs.reduce((a,col)=>a+amt(r[col]),0);
+      ezFolioMap.set(fol,{
+        fol,res:(C.res?r[C.res]:'').trim(),guest:(C.guest?r[C.guest]:'').trim(),room:(C.room?r[C.room]:'').trim(),arrival:(C.arrival?r[C.arrival]:'').trim(),
+        ezeeTot:amt(C.total?r[C.total]:0),ezeeVat:amt(C.vat?r[C.vat]:0),ezeeMuni:amt(C.muni?r[C.muni]:0),
+        ezeeDisc:amt(C.disc?r[C.disc]:0),ezeeAdj:amt(C.adj?r[C.adj]:0),ezeeRoom:amt(C.roomChg?r[C.roomChg]:0),
+        ezeeExtra:extraSum,ezeeCashIn:amt(C.cashIn?r[C.cashIn]:0),ezeeCashRef:Math.abs(amt(C.cashRef?r[C.cashRef]:0)),
+        ezeeSpanIn:amt(C.spanIn?r[C.spanIn]:0),ezeeVisaIn:amt(C.visaIn?r[C.visaIn]:0),ezeeMasterIn:amt(C.masterIn?r[C.masterIn]:0),
+        ezeeGccIn:amt(C.gccIn?r[C.gccIn]:0),ezeeMaestro:amt(C.maestroIn?r[C.maestroIn]:0),ezeeAmex:amt(C.amexIn?r[C.amexIn]:0),
+        ezeeBankIn:amt(C.bankIn?r[C.bankIn]:0),ezeeOwnerIn:amt(C.ownerIn?r[C.ownerIn]:0),
+        ezeeSpanRef:Math.abs(amt(C.spanRef?r[C.spanRef]:0)),ezeeVisaRef:Math.abs(amt(C.visaRef?r[C.visaRef]:0)),
+        ezeeMasterRef:Math.abs(amt(C.masterRef?r[C.masterRef]:0)),ezeeGccRef:Math.abs(amt(C.gccRef?r[C.gccRef]:0)),
+        ezeeBankRef:Math.abs(amt(C.bankRef?r[C.bankRef]:0)),
+      });
+    });
+
+    const F=[...ezFolioMap.values()];
+    const Fsum=key=>F.reduce((a,f)=>a+(f[key]||0),0);
+    const totalGross=Fsum('ezeeTot'),vatAmount=Fsum('ezeeVat'),muniAmount=Fsum('ezeeMuni');
+    const discount=Fsum('ezeeDisc'),adjustment=Fsum('ezeeAdj'),roomRevenue=Fsum('ezeeRoom'),extraCharges=Fsum('ezeeExtra');
+
+    const rcSections=er.sections;
+    const rcSum=(modePat,sign)=>Object.entries(rcSections)
+      .filter(([m])=>modePat.test(m))
+      .reduce((a,[,rows])=>a+rows.reduce((b,r)=>{
+        const v=Number(r[3])||0;
+        return b+(sign==='pos'&&v>0?v:sign==='neg'&&v<0?Math.abs(v):sign==='all'?v:0);
+      },0),0);
+
+    const cashIn=rcSum(/cash/i,'pos');
+    const cashRef=rcSum(/cash/i,'neg');
+    const nonCashIn=rcSum(/^(?!.*cash).*/i,'pos');
+    const nonCashRef=rcSum(/^(?!.*cash).*/i,'neg');
+    const totalRefund=cashRef+nonCashRef;
+    const netCollected=cashIn+nonCashIn-totalRefund;
+    const netRevenue=totalGross-vatAmount-muniAmount;
+    const odooTaxBase=netRevenue+muniAmount;
+
+    setProg(2,'Analysing Odoo invoices…');await sleep(200);
+    const ojR=oj.rows,ojRH=oj.rawHeaders,ojNH=oj.headers;
+    const og=(cands)=>fc2(ojRH,ojNH,cands);
+    const OC={folio:og(['Folio Number','folio_number']),partner:og(['Invoice Partner Display Name','partner','customer']),untaxed:og(['Untaxed Amount Signed Currency','Untaxed Amount']),total:og(['Total in Currency Signed','Total']),number:og(['Number'])};
+    const odooTotalGross=ojR.reduce((a,r)=>a+amt(r[OC.total]),0);
+    const odooTotalUntaxed=ojR.reduce((a,r)=>a+amt(r[OC.untaxed]),0);
+    const odooTotalVAT=odooTotalGross-odooTotalUntaxed;
+    const odooMuniAmount=odooTotalUntaxed-netRevenue;
+
+    setProg(3,'Building Odoo folio map…');await sleep(200);
+    const odFolioMap=new Map();
+    ojR.forEach(r=>{
+      const fol=(OC.folio?r[OC.folio]:'').trim();
+      if(!fol)return;
+      const ex=odFolioMap.get(fol);
+      const t=amt(r[OC.total]),u=amt(r[OC.untaxed]);
+      if(ex){ex.odooTot+=t;ex.odooNet+=u;}
+      else odFolioMap.set(fol,{fol,partner:(OC.partner?r[OC.partner]:'').trim(),odooTot:t,odooNet:u,number:(OC.number?r[OC.number]:'').trim()});
+    });
+
+    setProg(4,'Analysing Odoo payments…');await sleep(200);
+    const opR=op.rows,opRH=op.rawHeaders,opNH=op.headers;
+    const pg=(cands)=>fc2(opRH,opNH,cands);
+    const PC={journal:pg(['Journal']),amtSgn:pg(['Amount Signed','amount_signed']),state:pg(['State','status'])};
+    const activeAmt=PC.amtSgn;
+    const posted=PC.state?opR.filter(r=>{const s=(r[PC.state]||'').toLowerCase();return s==='posted'||s==='paid'||s===''||!s;}):opR;
+    let oCashIn=0,oCashOut=0,oSpanIn=0,oVisaIn=0,oMasterIn=0,oNonCashIn=0,oNonCashOut=0;
+    posted.forEach(r=>{
+      const a=activeAmt?amt(r[activeAmt]):0;if(a===0)return;
+      const jrn=(PC.journal?r[PC.journal]||'':'').toLowerCase();
+      const isCash=jrn.includes('cash')||jrn.includes('نقد')||jrn.includes('صندوق');
+      if(isCash){if(a>0)oCashIn+=a;else oCashOut+=Math.abs(a);}
+      else{
+        if(a>0){oNonCashIn+=a;if(jrn.includes('span')||jrn.includes('mada'))oSpanIn+=a;else if(jrn.includes('visa'))oVisaIn+=a;else if(jrn.includes('master'))oMasterIn+=a;}
+        else oNonCashOut+=Math.abs(a);
+      }
+    });
+    const oTotalRefund=oCashOut+oNonCashOut;
+    const oNetCollected=oCashIn+oNonCashIn-oTotalRefund;
+
+    setProg(5,'Matching folios…');await sleep(200);
+    const resRows=[];
+    ezFolioMap.forEach((ez,fol)=>{
+      const od=odFolioMap.get(fol);
+      const diff=od?od.odooTot-ez.ezeeTot:null;
+      const da=diff!==null?Math.abs(diff):null;
+      let st=!od?(ez.ezeeTot===0?'ok':'missing'):da<0.01?'ok':da<=1?'warn':'fail';
+      resRows.push({fol,res:ez.res,guestEzee:ez.guest,guestOdoo:od?od.partner:'—',room:ez.room,arrival:ez.arrival,ezeeTot:ez.ezeeTot,odooTot:od?od.odooTot:null,diff,status:st,odooNum:od?od.number:''});
+    });
+    odFolioMap.forEach((od,fol)=>{
+      if(!ezFolioMap.has(fol)&&od.odooTot>0)
+        resRows.push({fol,res:'—',guestEzee:'—',guestOdoo:od.partner,room:'—',arrival:'—',ezeeTot:null,odooTot:od.odooTot,diff:null,status:'extra',odooNum:od.number});
+    });
+    const order={fail:0,missing:1,warn:2,extra:3,ok:4};
+    resRows.sort((a,b)=>(order[a.status]??5)-(order[b.status]??5));
+
+    setProg(6,'Running financial checks…');await sleep(300);
+    const classify=d=>{const a=Math.abs(d);return a<0.01?'ok':a<=1?'warn':'fail';};
+    const chks=[];
+    const chk=(id,label,ev,ov,note)=>{const d=ov-ev;chks.push({id,label,ezeeVal:ev,odooVal:ov,diff:d,note,status:classify(d)});};
+    chk(2,'Total revenue (gross incl. VAT)',totalGross,odooTotalGross,'eZee: Σ Total (SAR)(Inclusive of Tax) vs Odoo: Σ Total in Currency Signed');
+    chk(4,'VAT 15%',vatAmount,odooTotalVAT,'eZee: Σ VAT15% (SAR) vs Odoo: Total − Untaxed');
+    chk(5,'Municipality 2.5%',muniAmount,odooMuniAmount,'eZee: Σ municipality 2.5% (SAR) vs Odoo: Untaxed Amount − eZee Net Revenue');
+    chk(6,'Cash collections',cashIn,oCashIn,'eZee: Cash in from Daily Receipt Report vs Odoo: Amount Signed > 0 where Journal = Cash/صندوق');
+    chk(7,'Non-cash collections',nonCashIn,oNonCashIn,'eZee: All non-cash inbound from Daily Receipt Report vs Odoo: all non-cash inbound Amount Signed');
+    chk(8,'Refunds / outbound',totalRefund,oTotalRefund,'eZee: Σ all *Refund columns vs Odoo: Σ |Amount Signed| where < 0');
+    chk(9,'Net collections',netCollected,oNetCollected,'eZee: total collected − refunds vs Odoo: Σ Amount Signed (sign-aware)');
+
+    const passed=chks.filter(c=>c.status==='ok').length;
+    const warned=chks.filter(c=>c.status==='warn').length;
+    const failed=chks.filter(c=>c.status==='fail').length;
+    let verdict='ok',vtext,vsub;
+    if(failed>0){verdict='fail';vtext=`${failed} check${failed>1?'s':''} FAILED`;vsub=`${passed} passed · ${warned} warnings · ${failed} failed`;}
+    else if(warned>0){verdict='warn';vtext=`${warned} warning${warned>1?'s':''} — small differences`;vsub=`${passed} passed · ${warned} warnings`;}
+    else{verdict='ok';vtext='All checks passed — eZee and Odoo are in sync';vsub=`${chks.length}/${chks.length} checks passed`;}
+
+    setProg(7,'Building report…');await sleep(200);
+    hideProg();
+
+    const vC={ok:'vp',warn:'vw',fail:'vf'}[verdict];
+    const viC={ok:'vip',warn:'viw',fail:'vif'}[verdict];
+    const vI={ok:'✓',warn:'!',fail:'✗'}[verdict];
+    const resFail=resRows.filter(r=>r.status==='fail'||r.status==='missing').length;
+    const resOk=resRows.filter(r=>r.status==='ok').length;
+
+    function dc(d){const a=Math.abs(d);if(a<0.01)return`<span class="c0 mn">0.00</span>`;if(a<=1)return`<span class="cw mn">${sar(d)}</span>`;return`<span class="cf mn">${sar(d)}</span>`;}
+    function pl(s){return s==='ok'?`<span class="pill pg2">PASS</span>`:s==='warn'?`<span class="pill pa">WARN</span>`:s==='missing'?`<span class="pill pm">MISSING</span>`:s==='extra'?`<span class="pill pb">EXTRA</span>`:`<span class="pill pr">FAIL</span>`;}
+
+    let h=`<div class="verdict ${vC}"><div class="vico ${viC}">${vI}</div><div><div class="vtt">${vtext}</div><div class="vss">${prop.label}${prop.city?' — '+prop.city:''} · ${fromStr} → ${toStr} · ${vsub}</div></div></div>`;
+    h+=`<div class="scards">
+      <div class="sc"><div class="scl">eZee Gross</div><div class="scv" style="font-size:13px">${sar(totalGross)}</div><div class="scs">incl. VAT</div></div>
+      <div class="sc"><div class="scl">Odoo Gross</div><div class="scv" style="font-size:13px">${sar(odooTotalGross)}</div><div class="scs">Total in Currency Signed</div></div>
+      <div class="sc"><div class="scl">Difference</div><div class="scv" style="font-size:13px;color:${Math.abs(odooTotalGross-totalGross)<0.01?'var(--grn-t)':'var(--red-t)'}">${sar(odooTotalGross-totalGross)}</div><div class="scs">Odoo − eZee</div></div>
+      <div class="sc"><div class="scl">Folios</div><div class="scv">${resRows.length}</div><div class="scs" style="color:${resFail>0?'var(--red-t)':'var(--grn-t)'}">✗ ${resFail} issues · ✓ ${resOk} ok</div></div>
+      <div class="sc"><div class="scl">Net collected</div><div class="scv" style="font-size:13px">${sar(oNetCollected)}</div><div class="scs">Odoo Amount Signed</div></div>
+    </div>`;
+    h+=`<div class="tabs"><div class="tab active" data-tab="checks">Financial checks</div><div class="tab" data-tab="reservations">Folio by folio${resFail>0?` <span style="color:var(--red-t);font-weight:700">(${resFail})</span>`:''}</div></div>`;
+
+    h+=`<div class="tc active" id="tab-checks">
+    <div class="note">Check 5 (Municipality 2.5%): Municipality is a regular invoice line in Odoo (not a tax object), so it is included inside the Untaxed Amount. Odoo municipality is derived as: Untaxed Amount − Net Revenue.</div>
+    <div style="display:flex;justify-content:flex-end;margin-bottom:8px"><button onclick="exportChecksCSV()" style="background:var(--bg-3);border:1px solid var(--border);color:var(--t1);padding:5px 14px;border-radius:6px;cursor:pointer;font-size:12px;font-family:sans-serif">⬇ Export CSV</button></div>
+    <table class="tbl"><colgroup><col style="width:32%"><col style="width:17%"><col style="width:17%"><col style="width:17%"><col style="width:17%"></colgroup>
+    <thead><tr><th># Check</th><th style="text-align:right">eZee</th><th style="text-align:right">Odoo</th><th style="text-align:right">Diff</th><th style="text-align:right">Status</th></tr></thead><tbody>`;
+    chks.forEach(c=>{
+      const rc=c.status==='ok'?'row-ok':c.status==='warn'?'row-warn':'row-fail';
+      h+=`<tr class="${rc}"><td><span style="color:var(--t2);font-size:10px">${c.id}.</span> <strong>${c.label}</strong><br><span style="font-size:10px;color:var(--t2);font-family:sans-serif">${c.note}</span></td>
+        <td style="text-align:right" class="mn">${sar(c.ezeeVal)}</td><td style="text-align:right" class="mn">${sar(c.odooVal)}</td>
+        <td style="text-align:right">${dc(c.diff)}</td><td style="text-align:right">${pl(c.status)}</td></tr>`;
+    });
+    h+=`</tbody></table></div>`;
+
+    const okC=resRows.filter(r=>r.status==='ok').length,wC=resRows.filter(r=>r.status==='warn').length,
+          fC=resRows.filter(r=>r.status==='fail').length,mC=resRows.filter(r=>r.status==='missing').length,
+          xC=resRows.filter(r=>r.status==='extra').length;
+    h+=`<div class="tc" id="tab-reservations">
+    <div class="note">Matched by <strong>Folio Number</strong>. MISSING = in eZee but no Odoo invoice. EXTRA = Odoo invoice with no eZee folio.</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <div class="res-filter" style="margin-bottom:0">
+        <input type="text" id="res-search" placeholder="Search folio, reservation, guest…" oninput="filterRes()">
+        <select id="res-filter-sel" onchange="filterRes()">
+          <option value="all">All (${resRows.length})</option>
+          <option value="fail">FAIL (${fC})</option>
+          <option value="missing">MISSING (${mC})</option>
+          <option value="warn">WARN (${wC})</option>
+          <option value="extra">EXTRA (${xC})</option>
+          <option value="ok">PASS (${okC})</option>
+        </select>
+        <span class="res-count" id="res-count">${resRows.length} folios</span>
+      </div>
+      <button onclick="exportFolioCSV()" style="background:var(--bg-3);border:1px solid var(--border);color:var(--t1);padding:5px 14px;border-radius:6px;cursor:pointer;font-size:12px;font-family:sans-serif;white-space:nowrap">⬇ Export CSV</button>
+    </div>
+    <div class="tbl-wrap"><table class="tbl">
+    <colgroup><col style="width:10%"><col style="width:9%"><col style="width:16%"><col style="width:16%"><col style="width:9%"><col style="width:13%"><col style="width:13%"><col style="width:7%"><col style="width:7%"></colgroup>
+    <thead><tr><th>Folio</th><th>Res No</th><th>Guest (eZee)</th><th>Partner (Odoo)</th><th>Arrival</th>
+    <th style="text-align:right">eZee Total</th><th style="text-align:right">Odoo Total</th><th style="text-align:right">Diff</th><th style="text-align:right">Status</th></tr></thead>
+    <tbody id="res-tbody">`;
+    resRows.forEach(r=>{
+      const rc=r.status==='ok'?'row-ok':r.status==='warn'?'row-warn':r.status==='fail'?'row-fail':'row-missing';
+      h+=`<tr class="${rc}" data-status="${r.status}" data-folio="${r.fol.toLowerCase()}" data-res="${r.res.toLowerCase()}" data-guest="${(r.guestEzee+' '+r.guestOdoo).toLowerCase()}">
+        <td class="mn" style="font-weight:600">${r.fol}</td><td class="mn" style="font-size:11px">${r.res}</td>
+        <td style="font-family:sans-serif">${r.guestEzee}</td><td style="font-family:sans-serif;color:var(--t1)">${r.guestOdoo}</td>
+        <td style="font-size:11px;font-family:sans-serif;color:var(--t1)">${r.arrival}</td>
+        <td style="text-align:right" class="mn">${r.ezeeTot!=null?sar(r.ezeeTot):'—'}</td>
+        <td style="text-align:right" class="mn">${r.odooTot!=null?sar(r.odooTot):'—'}</td>
+        <td style="text-align:right">${r.diff!=null?dc(r.diff):'<span style="color:var(--t2)">—</span>'}</td>
+        <td style="text-align:right">${pl(r.status)}</td></tr>`;
+    });
+    h+=`</tbody></table></div></div>`;
+
+    const area=document.getElementById('results');
+    area.innerHTML=h;
+    area.querySelectorAll('.tab[data-tab]').forEach(t=>{
+      t.addEventListener('click',()=>{
+        area.querySelectorAll('.tab[data-tab]').forEach(x=>x.classList.toggle('active',x.dataset.tab===t.dataset.tab));
+        area.querySelectorAll('.tc').forEach(c=>c.classList.toggle('active',c.id==='tab-'+t.dataset.tab));
+      });
+    });
+    area.scrollIntoView({behavior:'smooth',block:'start'});
+
+  }catch(err){
+    hideProg();
+    document.getElementById('results').innerHTML=`<div class="err-box"><strong>Error: ${err.message}</strong><br>Please re-validate your files and check the column mapping panel.</div>`;
+  }finally{
+    this.disabled=false;
+  }
+});
+
+function filterRes(){
+  const search=(document.getElementById('res-search').value||'').toLowerCase();
+  const filter=document.getElementById('res-filter-sel').value;
+  const tbody=document.getElementById('res-tbody');
+  if(!tbody)return;
+  let vis=0;
+  tbody.querySelectorAll('tr').forEach(tr=>{
+    const mf2=filter==='all'||tr.dataset.status===filter;
+    const ms=!search||tr.dataset.folio.includes(search)||tr.dataset.res.includes(search)||tr.dataset.guest.includes(search);
+    tr.style.display=mf2&&ms?'':'none';
+    if(mf2&&ms)vis++;
+  });
+  const ce=document.getElementById('res-count');
+  if(ce)ce.textContent=vis+' folios';
+}
+function csvEscape(v){
+  const s=String(v==null?'':v);
+  return s.includes(',')||s.includes('"')||s.includes('\n')?'"'+s.replace(/"/g,'""')+'"':s;
+}
+function downloadCSV(filename,rows){
+  const content=rows.map(r=>r.map(csvEscape).join(',')).join('\r\n');
+  // Try native download first (works when opened as local file)
+  try{
+    const blob=new Blob(['\uFEFF'+content],{type:'text/csv;charset=utf-8'});
+    const a=document.createElement('a');
+    const url=URL.createObjectURL(blob);
+    a.href=url;a.download=filename;
+    document.body.appendChild(a);a.click();
+    document.body.removeChild(a);
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+    return;
+  }catch(e){}
+  // Fallback: copy to clipboard
+  try{
+    navigator.clipboard.writeText('\uFEFF'+content).then(()=>{
+      showToast('📋 Copied to clipboard! Paste into Notepad/Excel and save as .csv');
+    }).catch(()=>showToast('⚠️ Could not copy. Open this file locally for download.',true));
+  }catch(e){
+    showToast('⚠️ Download blocked in this environment. Open the HTML file locally.',true);
+  }
+}
+
+function showToast(msg,isErr=false){
+  let t=document.getElementById('_toast');
+  if(!t){
+    t=document.createElement('div');
+    t.id='_toast';
+    t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);padding:11px 20px;border-radius:8px;font-size:12px;font-family:sans-serif;font-weight:600;z-index:9999;max-width:420px;text-align:center;box-shadow:0 4px 20px rgba(0,0,0,.4);transition:opacity .3s;';
+    document.body.appendChild(t);
+  }
+  t.style.background=isErr?'#3d1515':'#0d3d28';
+  t.style.color=isErr?'#f07070':'#2ecc8a';
+  t.style.border=isErr?'.5px solid #f05050':'.5px solid #2ecc8a';
+  t.textContent=msg;
+  t.style.opacity='1';
+  clearTimeout(t._to);
+  t._to=setTimeout(()=>{t.style.opacity='0';},4500);
+}
+function exportChecksCSV(){
+  const rows=[['#','Check','Note','eZee (SAR)','Odoo (SAR)','Diff (SAR)','Status']];
+  document.querySelectorAll('#tab-checks .tbl tbody tr').forEach(tr=>{
+    const tds=[...tr.querySelectorAll('td')];
+    if(tds.length<5)return;
+    const id=(tds[0].querySelector('span:first-child')?.textContent||'').replace('.','').trim();
+    const label=tds[0].querySelector('strong')?.textContent||'';
+    const spans=tds[0].querySelectorAll('span');
+    const note=spans.length>1?spans[spans.length-1].textContent.trim():'';
+    const ezee=tds[1].textContent.replace(/SAR\s*/,'').replace(/,/g,'').trim();
+    const odoo=tds[2].textContent.replace(/SAR\s*/,'').replace(/,/g,'').trim();
+    const diff=tds[3].textContent.replace(/SAR\s*/,'').replace(/,/g,'').replace('−','-').trim();
+    const status=tds[4].textContent.trim();
+    rows.push([id,label,note,ezee,odoo,diff,status]);
+  });
+  downloadCSV(`financial_checks_${new Date().toISOString().slice(0,10)}.csv`,rows);
+}
+function exportFolioCSV(){
+  const rows=[['Folio','Res No','Guest (eZee)','Partner (Odoo)','Arrival','eZee Total (SAR)','Odoo Total (SAR)','Diff (SAR)','Status']];
+  document.querySelectorAll('#res-tbody tr').forEach(tr=>{
+    const tds=[...tr.querySelectorAll('td')];
+    if(tds.length<9)return;
+    rows.push([
+      tds[0].textContent.trim(),tds[1].textContent.trim(),tds[2].textContent.trim(),tds[3].textContent.trim(),tds[4].textContent.trim(),
+      tds[5].textContent.replace(/SAR\s*/,'').replace(/,/g,'').trim(),
+      tds[6].textContent.replace(/SAR\s*/,'').replace(/,/g,'').trim(),
+      tds[7].textContent.replace(/SAR\s*/,'').replace(/,/g,'').replace('−','-').replace('+','').trim(),
+      tds[8].textContent.trim(),
+    ]);
+  });
+  downloadCSV(`folio_by_folio_${new Date().toISOString().slice(0,10)}.csv`,rows);
+}
+</script>
+</body>
+</html>
