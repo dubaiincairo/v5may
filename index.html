@@ -1136,6 +1136,12 @@ function toggleChat(){
   }
 }
 
+function resetChatKey(){
+  localStorage.removeItem('anthro_key');
+  document.getElementById('chat-key-row').classList.remove('cp-hidden');
+  document.getElementById('chat-key-inp').value='';
+  document.getElementById('chat-key-inp').focus();
+}
 function saveChatKey(){
   const v=document.getElementById('chat-key-inp').value.trim();
   if(!v){showToast('Enter your Anthropic API key first',true);return;}
@@ -1237,7 +1243,10 @@ document.getElementById('chat-in').addEventListener('keydown',function(e){
       <div id="chat-hdr-title">Claude Assistant</div>
       <div id="chat-hdr-sub">Run a financial check to get context-aware answers</div>
     </div>
-    <button id="chat-close" onclick="toggleChat()">✕</button>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <button onclick="resetChatKey()" title="Change API key" style="font-size:10px;padding:3px 8px;background:var(--bg-3);border:.5px solid var(--border-hi);border-radius:var(--r);color:var(--t2);cursor:pointer;font-family:sans-serif;">🔑 Key</button>
+      <button id="chat-close" onclick="toggleChat()">✕</button>
+    </div>
   </div>
   <div id="chat-key-row">
     <span id="chat-key-lbl">API Key</span>
