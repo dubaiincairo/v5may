@@ -303,11 +303,15 @@ function rf(e,k){
   const inp=el.querySelector('input[type=file]');if(inp)inp.value='';
   resetValidation();
 }
+function updateRunBtn(){
+  const required=['esales','ereceipt','eadv','ojnl','opay'];
+  document.getElementById('run-btn').disabled=!required.every(k=>FILES[k]);
+}
 function resetValidation(){
-  document.getElementById('run-btn').disabled=true;
   document.getElementById('pf-wrap').style.display='none';
   document.getElementById('pf-wrap').innerHTML='';
   PARSED={};
+  updateRunBtn();
 }
 
 function parseCSV(text){
@@ -636,11 +640,10 @@ async function runPreflight(){
   }
 
   const summaryHtml=totalCritical===0
-    ?`<div class="pf-summary"><span class="pf-summary-ico">✅</span><span style="font-family:sans-serif;color:var(--grn-t)"><strong>All files validated successfully.</strong> Run Financial Check is now enabled.</span></div>`
-    :`<div class="pf-summary" style="border-color:var(--red);background:var(--red-dim)"><span class="pf-summary-ico">❌</span><span style="font-family:sans-serif;color:var(--red-t)"><strong>${totalCritical} critical error${totalCritical>1?'s':''} found.</strong> Fix the issues above before running the financial check.</span></div>`;
+    ?`<div class="pf-summary"><span class="pf-summary-ico">✅</span><span style="font-family:sans-serif;color:var(--grn-t)"><strong>All files validated successfully.</strong> Ready to run financial check.</span></div>`
+    :`<div class="pf-summary" style="border-color:var(--amb);background:var(--amb-dim)"><span class="pf-summary-ico">⚠️</span><span style="font-family:sans-serif;color:var(--amb-t)"><strong>${totalCritical} critical issue${totalCritical>1?'s':''} found.</strong> You can still run the financial check — results may be incomplete or inaccurate.</span></div>`;
   panel.innerHTML=summaryHtml+html;
-  if(totalCritical===0)document.getElementById('run-btn').disabled=false;
-  else document.getElementById('run-btn').disabled=true;
+  document.getElementById('run-btn').disabled=false;
 }
 
 function buildPfCard(title,statusCls,statusLabel,issues){
@@ -705,7 +708,9 @@ document.getElementById('run-btn').addEventListener('click',async function(){
   if(!propKey){alert('Please select a property.');return;}
   if(!fDate||!tDate){alert('Please enter valid dates.');return;}
   if(fDate>tDate){alert('"From" must be before "To".');return;}
-  if(!PARSED['esales']||!PARSED['ereceipt']||!PARSED['ojnl']||!PARSED['opay']){alert('Please run "Validate Files" first.');return;}
+  if(!PARSED['esales']||!PARSED['ereceipt']||!PARSED['ojnl']||!PARSED['opay']){
+    try{await runPreflight();}catch(e){alert('Failed to parse files: '+e.message);this.disabled=false;return;}
+  }
 
   const prop=PROPS[propKey];
   const fromStr=p2(fDate.getDate())+'/'+p2(fDate.getMonth()+1)+'/'+fDate.getFullYear();
