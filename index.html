@@ -139,6 +139,38 @@ select.inp:focus{border-color:var(--acc);}
 ::-webkit-scrollbar{width:5px;height:5px;}
 ::-webkit-scrollbar-track{background:var(--bg-1);}
 ::-webkit-scrollbar-thumb{background:var(--border-hi);border-radius:3px;}
+/* Chat widget */
+#chat-fab{position:fixed;bottom:24px;right:24px;z-index:1000;display:flex;align-items:center;gap:8px;padding:11px 18px;background:var(--acc-dim);border:.5px solid var(--acc);border-radius:999px;color:var(--acc);font-size:13px;font-weight:700;font-family:'SF Mono','Fira Code',monospace;cursor:pointer;box-shadow:0 4px 20px rgba(61,142,240,.3);transition:all .2s;}
+#chat-fab:hover{background:#1e3f7a;box-shadow:0 4px 28px rgba(61,142,240,.5);}
+#chat-panel{position:fixed;bottom:76px;right:24px;z-index:999;width:420px;max-width:calc(100vw - 32px);max-height:580px;background:var(--bg-1);border:.5px solid var(--border-hi);border-radius:var(--rl);display:flex;flex-direction:column;box-shadow:0 8px 40px rgba(0,0,0,.6);}
+#chat-panel.cp-hidden{display:none;}
+#chat-hdr{padding:13px 16px;border-bottom:.5px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+#chat-hdr-title{font-size:13px;font-weight:700;}
+#chat-hdr-sub{font-size:10px;color:var(--t2);font-family:sans-serif;margin-top:3px;line-height:1.4;}
+#chat-close{width:26px;height:26px;border-radius:50%;background:var(--bg-3);border:.5px solid var(--border-hi);color:var(--t2);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0;}
+#chat-close:hover{background:var(--red-dim);border-color:var(--red);color:var(--red-t);}
+#chat-key-row{padding:9px 12px;background:var(--bg-2);border-bottom:.5px solid var(--border);display:flex;gap:8px;align-items:center;flex-shrink:0;}
+#chat-key-row.cp-hidden{display:none;}
+#chat-key-inp{flex:1;height:30px;background:var(--bg-3);border:.5px solid var(--border-hi);border-radius:var(--r);padding:0 10px;font-size:11px;color:var(--t0);font-family:sans-serif;outline:none;}
+#chat-key-inp:focus{border-color:var(--acc);}
+#chat-key-lbl{font-size:10px;color:var(--t2);font-family:sans-serif;white-space:nowrap;}
+#chat-key-save{height:30px;padding:0 12px;background:var(--acc-dim);border:.5px solid var(--acc);border-radius:var(--r);color:var(--acc);font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;}
+#chat-msgs{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:10px;min-height:180px;}
+.cmsg{display:flex;gap:8px;align-items:flex-start;}
+.cmsg-u{flex-direction:row-reverse;}
+.cico{width:22px;height:22px;border-radius:50%;flex-shrink:0;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;}
+.cmsg-u .cico{background:var(--acc-dim);color:var(--acc);}
+.cmsg-a .cico{background:var(--bg-3);color:var(--t1);}
+.cbub{max-width:88%;padding:8px 11px;border-radius:10px;font-size:12px;line-height:1.6;font-family:sans-serif;word-break:break-word;white-space:pre-wrap;}
+.cmsg-u .cbub{background:var(--acc-dim);color:var(--t0);border:.5px solid var(--acc-dim);border-radius:10px 2px 10px 10px;}
+.cmsg-a .cbub{background:var(--bg-2);color:var(--t0);border:.5px solid var(--border);border-radius:2px 10px 10px 10px;}
+.cbub.cloading{color:var(--t2);font-style:italic;}
+#chat-inp-row{padding:10px 12px;border-top:.5px solid var(--border);display:flex;gap:8px;align-items:flex-end;flex-shrink:0;}
+#chat-in{flex:1;min-height:36px;max-height:110px;resize:none;background:var(--bg-2);border:.5px solid var(--border-hi);border-radius:var(--r);padding:8px 10px;font-size:12px;color:var(--t0);font-family:sans-serif;outline:none;overflow-y:auto;line-height:1.45;}
+#chat-in:focus{border-color:var(--acc);}
+#chat-send{width:36px;height:36px;flex-shrink:0;border-radius:var(--r);background:var(--acc-dim);border:.5px solid var(--acc);color:var(--acc);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;}
+#chat-send:hover:not(:disabled){background:#1e3f7a;}
+#chat-send:disabled{opacity:.35;cursor:not-allowed;}
 </style>
 </head>
 <body>
@@ -905,6 +937,10 @@ document.getElementById('run-btn').addEventListener('click',async function(){
     setProg(7,'Building report…');await sleep(200);
     hideProg();
 
+    CHAT_DATA={prop,fromStr,toStr,chks,resRows,totalGross,odooTotalGross,vatAmount,muniAmount,cashIn,nonCashIn,totalRefund,netCollected,oCashIn,oNonCashIn,oTotalRefund,oNetCollected};
+    const ctxEl=document.getElementById('chat-hdr-sub');
+    if(ctxEl)ctxEl.textContent=prop.label+(prop.city?' — '+prop.city:'')+' · '+fromStr+' → '+toStr+' · '+chks.length+' checks · '+resRows.length+' folios';
+
     const vC={ok:'vp',warn:'vw',fail:'vf'}[verdict];
     const viC={ok:'vip',warn:'viw',fail:'vif'}[verdict];
     const vI={ok:'✓',warn:'!',fail:'✗'}[verdict];
@@ -1083,6 +1119,142 @@ function exportFolioCSV(){
   });
   downloadCSV(`folio_by_folio_${new Date().toISOString().slice(0,10)}.csv`,rows);
 }
+
+// ── Chat widget ──────────────────────────────────────────────
+let CHAT_HISTORY=[];
+let CHAT_DATA=null;
+let chatOpen=false;
+
+function toggleChat(){
+  chatOpen=!chatOpen;
+  document.getElementById('chat-panel').classList.toggle('cp-hidden',!chatOpen);
+  if(chatOpen){
+    const k=localStorage.getItem('anthro_key');
+    document.getElementById('chat-key-row').classList.toggle('cp-hidden',!!k);
+    setTimeout(()=>document.getElementById('chat-in').focus(),50);
+    scrollChatEnd();
+  }
+}
+
+function saveChatKey(){
+  const v=document.getElementById('chat-key-inp').value.trim();
+  if(!v){showToast('Enter your Anthropic API key first',true);return;}
+  localStorage.setItem('anthro_key',v);
+  document.getElementById('chat-key-row').classList.add('cp-hidden');
+  document.getElementById('chat-key-inp').value='';
+  showToast('API key saved');
+}
+
+function scrollChatEnd(){
+  const m=document.getElementById('chat-msgs');
+  if(m)m.scrollTop=m.scrollHeight;
+}
+
+function addChatBubble(role,text,loading){
+  const wrap=document.createElement('div');
+  wrap.className='cmsg cmsg-'+(role==='user'?'u':'a');
+  const ico=document.createElement('div');ico.className='cico';ico.textContent=role==='user'?'U':'C';
+  const bub=document.createElement('div');bub.className='cbub'+(loading?' cloading':'');bub.textContent=text;
+  wrap.appendChild(ico);wrap.appendChild(bub);
+  document.getElementById('chat-msgs').appendChild(wrap);
+  scrollChatEnd();
+  return bub;
+}
+
+function buildChatSys(){
+  if(!CHAT_DATA)return'You are a helpful assistant for a hotel financial reconciliation tool (eZee Absolute ↔ Odoo 19). No check results have been run yet. Ask the user to run a financial check first.';
+  const{prop,fromStr,toStr,chks,resRows}=CHAT_DATA;
+  const ok=resRows.filter(r=>r.status==='ok').length,wn=resRows.filter(r=>r.status==='warn').length,
+        fl=resRows.filter(r=>r.status==='fail').length,ms=resRows.filter(r=>r.status==='missing').length,ex=resRows.filter(r=>r.status==='extra').length;
+  let s=`You are a financial analyst assistant helping review a hotel reconciliation (eZee Absolute ↔ Odoo 19 Enterprise).
+
+Property: ${prop.label}${prop.city?' — '+prop.city:''}
+Period: ${fromStr} → ${toStr}
+
+FINANCIAL CHECKS (7 checks):
+${chks.map(c=>`${c.id}. ${c.label}
+   eZee: ${c.ezeeVal.toFixed(2)} SAR | Odoo: ${c.odooVal.toFixed(2)} SAR | Diff: ${c.diff>=0?'+':''}${c.diff.toFixed(2)} SAR | Status: ${c.status.toUpperCase()}
+   Source: ${c.note}`).join('\n\n')}
+
+FOLIO SUMMARY (${resRows.length} total):
+  ✓ Pass: ${ok} | ⚠ Warn: ${wn} | ✗ Fail: ${fl} | MISSING (eZee only): ${ms} | EXTRA (Odoo only): ${ex}`;
+
+  const probs=resRows.filter(r=>r.status==='fail'||r.status==='missing'||r.status==='warn').slice(0,50);
+  if(probs.length){
+    s+=`\n\nPROBLEM FOLIOS (up to 50 shown):\n`;
+    s+=probs.map(r=>`  ${r.fol} [${r.status.toUpperCase()}] eZee:${r.ezeeTot!=null?r.ezeeTot.toFixed(2):'N/A'} Odoo:${r.odooTot!=null?r.odooTot.toFixed(2):'N/A'} diff:${r.diff!=null?r.diff.toFixed(2):'N/A'} guest:"${r.guestEzee}" arrival:${r.arrival}`).join('\n');
+  }
+  s+=`\n\nAnswer concisely and precisely. Format monetary values as SAR. Provide actionable insights.`;
+  return s;
+}
+
+async function sendChatMsg(){
+  const key=localStorage.getItem('anthro_key');
+  if(!key){document.getElementById('chat-key-row').classList.remove('cp-hidden');document.getElementById('chat-key-inp').focus();return;}
+  const inp=document.getElementById('chat-in');
+  const msg=inp.value.trim();
+  if(!msg)return;
+  inp.value='';inp.style.height='';
+  addChatBubble('user',msg,false);
+  CHAT_HISTORY.push({role:'user',content:msg});
+  const sendBtn=document.getElementById('chat-send');
+  sendBtn.disabled=true;
+  const asBub=addChatBubble('assistant','Thinking…',true);
+  try{
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-allow-browser':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1024,system:buildChatSys(),messages:CHAT_HISTORY}),
+    });
+    if(!resp.ok){const e=await resp.json().catch(()=>({error:{message:'HTTP '+resp.status}}));throw new Error(e.error?.message||'API error '+resp.status);}
+    const data=await resp.json();
+    const text=data.content[0].text;
+    asBub.textContent=text;asBub.classList.remove('cloading');
+    CHAT_HISTORY.push({role:'assistant',content:text});
+  }catch(e){
+    asBub.textContent='Error: '+e.message;asBub.style.color='var(--red-t)';asBub.classList.remove('cloading');
+    CHAT_HISTORY.pop();
+  }finally{
+    sendBtn.disabled=false;scrollChatEnd();
+  }
+}
+
+document.getElementById('chat-in').addEventListener('input',function(){
+  this.style.height='';this.style.height=Math.min(this.scrollHeight,110)+'px';
+});
+document.getElementById('chat-in').addEventListener('keydown',function(e){
+  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChatMsg();}
+});
 </script>
+
+<!-- Chat floating button -->
+<button id="chat-fab" onclick="toggleChat()">💬&nbsp; Ask Claude</button>
+
+<!-- Chat panel -->
+<div id="chat-panel" class="cp-hidden">
+  <div id="chat-hdr">
+    <div>
+      <div id="chat-hdr-title">Claude Assistant</div>
+      <div id="chat-hdr-sub">Run a financial check to get context-aware answers</div>
+    </div>
+    <button id="chat-close" onclick="toggleChat()">✕</button>
+  </div>
+  <div id="chat-key-row">
+    <span id="chat-key-lbl">API Key</span>
+    <input type="password" id="chat-key-inp" placeholder="sk-ant-… Anthropic API key">
+    <button id="chat-key-save" onclick="saveChatKey()">Save</button>
+  </div>
+  <div id="chat-msgs">
+    <div class="cmsg cmsg-a">
+      <div class="cico">C</div>
+      <div class="cbub">Hi! I can help you analyse your reconciliation results — discrepancies, problem folios, VAT gaps, and more. Run the financial check first, then ask me anything.</div>
+    </div>
+  </div>
+  <div id="chat-inp-row">
+    <textarea id="chat-in" placeholder="Ask about the results… (Enter to send)" rows="1"></textarea>
+    <button id="chat-send" onclick="sendChatMsg()">↑</button>
+  </div>
+</div>
+
 </body>
 </html>
