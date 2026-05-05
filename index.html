@@ -735,10 +735,17 @@ document.getElementById('run-btn').addEventListener('click',async function(){
     const g=(cands)=>fc2(esRH,esNH,cands);
 
     const C={
-      folio:g(['Folio No','Folio Number']),res:g(['Reservation No','Res No']),guest:g(['Guest Name']),room:g(['Room']),arrival:g(['Arrival']),
-      roomChg:g(['All Room Charges  (SAR) (Exclusive of Tax)','All Room Charges (SAR)']),muni:g(['municipality 2.5% (SAR)','municipality 2.5%','municipality']),
-      vat:g(['VAT15% (SAR)','VAT15%']),disc:g(['Discount (SAR)','Discount']),adj:g(['Adjustment (SAR)','Adjustment']),
-      total:g(['Total (SAR) (Inclusive of Tax)','Total (SAR)(Inclusive']),
+      folio:g(['Folio No','Folio Number','Folio','Folio #','Folio Id']),
+      res:g(['Reservation No','Res No','Reservation Number','Reservation']),
+      guest:g(['Guest Name','Guest']),
+      room:g(['Room','Room No','Room Number','room_no']),
+      arrival:g(['Arrival','Arrival Date','arrival_date','Check In','Checkin']),
+      roomChg:g(['All Room Charges  (SAR) (Exclusive of Tax)','All Room Charges (SAR) (Exclusive of Tax)','All Room Charges (SAR)','Room Charges (SAR)','Room Charges']),
+      muni:g(['municipality 2.5% (SAR)','municipality 2.5%','municipality','Municipality','Municipality Fee (SAR)','Municipality Fee']),
+      vat:g(['VAT15% (SAR)','VAT15%','VAT 15% (SAR)','VAT 15%','VAT']),
+      disc:g(['Discount (SAR)','Discount']),
+      adj:g(['Adjustment (SAR)','Adjustment']),
+      total:g(['Total (SAR) (Inclusive of Tax)','Total (SAR)(Inclusive of Tax)','Total (SAR)(Inclusive','Total (SAR) Inclusive of Tax','Total (SAR)','Total Incl Tax','Grand Total (SAR)']),
       cashIn:g(['Cash Collected (SAR)','Cash Collected']),cashRef:g(['Cash Refund  (SAR)','Cash Refund (SAR)','Cash Refund']),
       spanIn:g(['SPAN CARD Collected (SAR)','SPAN CARD Collected']),spanRef:g(['SPAN CARD Refund  (SAR)','SPAN CARD Refund']),
       visaIn:g(['VISA CARD Collected (SAR)','VISA CARD Collected']),visaRef:g(['VISA CARD Refund  (SAR)','VISA CARD Refund']),
@@ -748,6 +755,16 @@ document.getElementById('run-btn').addEventListener('click',async function(){
       bankIn:g(['Bank Transfer Collected (SAR)','Bank Transfer Collected']),bankRef:g(['Bank Transfer Refund  (SAR)','Bank Transfer Refund']),
       ownerIn:g(['Owner Company Collected (SAR)','Owner Company Collected']),
     };
+    // Fallback: detect folio column by scanning for FOL-prefixed values
+    if(!C.folio){
+      const fc=esNH.find(h=>esR.slice(0,30).some(r=>/^FOL\d/i.test((r[h]||'').trim())));
+      if(fc)C.folio=fc;
+    }
+    // Fallback: detect total column — find first header containing "total" that's not a sub-category
+    if(!C.total){
+      const tc=esNH.find((h,i)=>/total/i.test(esRH[i]||'')&&!/room|disc|adj|vat|muni|munici|cash|span|visa|master|bank|collect|refund|transfer|express|amex|gccnet|maestro|owner/i.test(esRH[i]||''));
+      if(tc)C.total=tc;
+    }
 
     setProg(1,'Building eZee folio map…');await sleep(200);
     const extraColDefs=[
@@ -830,12 +847,14 @@ document.getElementById('run-btn').addEventListener('click',async function(){
     setProg(4,'Analysing Odoo payments…');await sleep(200);
     const opR=op.rows,opRH=op.rawHeaders,opNH=op.headers;
     const pg=(cands)=>fc2(opRH,opNH,cands);
-    const PC={journal:pg(['Journal']),amtSgn:pg(['Amount Signed','amount_signed']),state:pg(['State','status'])};
+    const PC={journal:pg(['Journal']),amtSgn:pg(['Amount Signed','amount_signed','Amount']),state:pg(['State','status','Payment Status']),payType:pg(['Payment Type','payment_type','Type'])};
     const activeAmt=PC.amtSgn;
     const posted=PC.state?opR.filter(r=>{const s=(r[PC.state]||'').toLowerCase();return s==='posted'||s==='paid'||s===''||!s;}):opR;
     let oCashIn=0,oCashOut=0,oSpanIn=0,oVisaIn=0,oMasterIn=0,oNonCashIn=0,oNonCashOut=0;
     posted.forEach(r=>{
-      const a=activeAmt?amt(r[activeAmt]):0;if(a===0)return;
+      let a=activeAmt?amt(r[activeAmt]):0;if(a===0)return;
+      // Odoo 19 may export outbound payments with a positive Amount Signed + Payment Type = outbound
+      if(PC.payType&&a>0){const pt=(r[PC.payType]||'').toLowerCase();if(pt==='outbound'||pt.includes('refund'))a=-a;}
       const jrn=(PC.journal?r[PC.journal]||'':'').toLowerCase();
       const isCash=jrn.includes('cash')||jrn.includes('نقد')||jrn.includes('صندوق');
       if(isCash){if(a>0)oCashIn+=a;else oCashOut+=Math.abs(a);}
