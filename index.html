@@ -1067,9 +1067,17 @@ document.getElementById('run-btn').addEventListener('click',async function(){
           Integration Repo (dubaiincairo/ezee-odoo-connector)
         </a>
       </div>
-      <button class="ai-run-btn" id="ai-run-btn" onclick="runAIAnalysis()">
-        <span style="font-size:16px">✦</span> Run Claude AI Insight — Full Reasoning Analysis
-      </button>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:0">
+        <button class="ai-run-btn" id="ai-run-btn" onclick="runAIAnalysis()" style="margin-bottom:0">
+          <span style="font-size:16px">✦</span> Run via API Key
+        </button>
+        <button class="ai-run-btn" id="ai-claude-btn" onclick="openInClaude()" style="margin-bottom:0;background:linear-gradient(135deg,#1a2a1a,#0d2a1a);border-color:var(--grn);color:var(--grn-t)">
+          <span style="font-size:15px">↗</span> Open in Claude.ai (Max Plan)
+        </button>
+      </div>
+      <div id="claude-hint" style="display:none;background:var(--grn-dim);border:.5px solid #1a5535;border-radius:var(--r);padding:10px 14px;font-size:12px;font-family:sans-serif;color:var(--grn-t);margin-top:10px;line-height:1.6">
+        <strong>Prompt copied to clipboard.</strong> Claude.ai is opening in a new tab — paste with <kbd style="background:var(--bg-3);border:.5px solid var(--border);border-radius:3px;padding:1px 6px;font-family:monospace;font-size:11px">Ctrl+V</kbd> (or <kbd style="background:var(--bg-3);border:.5px solid var(--border);border-radius:3px;padding:1px 6px;font-family:monospace;font-size:11px">⌘V</kbd> on Mac) and send.
+      </div>
       <div class="ai-thinking" id="ai-thinking">
         <div class="ai-dot"></div><div class="ai-dot"></div><div class="ai-dot"></div>
         <span id="ai-thinking-msg">Claude is analysing all five reports…</span>
@@ -1392,6 +1400,30 @@ Specifically:
 7. Provide the verdict, summary tables, gap table, and concrete action items per the skill output format`;
 
   return prompt;
+}
+
+// ─── Open in Claude.ai ────────────────────────────────────────────────────
+async function openInClaude(){
+  const ctx=window._aiContext;
+  if(!ctx){showToast('Please run the Financial Check first.',true);return;}
+  const btn=document.getElementById('ai-claude-btn');
+  const hint=document.getElementById('claude-hint');
+  btn.disabled=true;
+  btn.innerHTML='<span style="font-size:14px">⏳</span> Building prompt…';
+  try{
+    const prompt=AI_SYSTEM+'\n\n---\n\n'+buildAIPrompt(ctx);
+    await navigator.clipboard.writeText(prompt);
+    hint.style.display='block';
+    window.open('https://claude.ai/new','_blank','noopener');
+  }catch(e){
+    // clipboard failed — show the prompt in a textarea for manual copy
+    hint.innerHTML=`<strong>Could not auto-copy.</strong> Select all and copy the text below, then paste in Claude.ai:<br><textarea style="width:100%;height:120px;margin-top:8px;background:var(--bg-3);border:.5px solid var(--border);border-radius:4px;color:var(--t0);font-size:11px;padding:8px;font-family:monospace;resize:vertical" readonly>${(AI_SYSTEM+'\n\n---\n\n'+buildAIPrompt(ctx)).replace(/</g,'&lt;')}</textarea>`;
+    hint.style.display='block';
+    window.open('https://claude.ai/new','_blank','noopener');
+  }finally{
+    btn.disabled=false;
+    btn.innerHTML='<span style="font-size:15px">↗</span> Open in Claude.ai (Max Plan)';
+  }
 }
 
 // ─── Run AI Analysis ───────────────────────────────────────────────────────
