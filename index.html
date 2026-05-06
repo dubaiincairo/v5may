@@ -139,6 +139,48 @@ select.inp:focus{border-color:var(--acc);}
 ::-webkit-scrollbar{width:5px;height:5px;}
 ::-webkit-scrollbar-track{background:var(--bg-1);}
 ::-webkit-scrollbar-thumb{background:var(--border-hi);border-radius:3px;}
+/* AI Insight tab */
+.ai-key-bar{display:flex;align-items:center;gap:10px;background:var(--bg-2);border:.5px solid var(--border);border-radius:var(--r);padding:10px 14px;margin-bottom:14px;flex-wrap:wrap;}
+.ai-key-bar label{font-size:11px;color:var(--t1);font-family:sans-serif;white-space:nowrap;}
+.ai-key-inp{flex:1;min-width:200px;height:34px;background:var(--bg-3);border:.5px solid var(--border);border-radius:6px;padding:0 12px;font-size:12px;color:var(--t0);font-family:'SF Mono','Fira Code',monospace;outline:none;letter-spacing:.04em;}
+.ai-key-inp:focus{border-color:var(--acc);}
+.ai-key-btn{height:34px;padding:0 16px;background:var(--acc-dim);border:.5px solid var(--acc);color:var(--acc);border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;font-family:'SF Mono','Fira Code',monospace;white-space:nowrap;}
+.ai-key-btn:hover{background:#1e3f7a;}
+.ai-key-btn:disabled{opacity:.4;cursor:not-allowed;}
+.ai-run-btn{width:100%;padding:13px;background:linear-gradient(135deg,var(--acc-dim),#1a2a4a);border:.5px solid var(--acc);color:var(--acc);border-radius:var(--r);font-size:13px;font-weight:700;cursor:pointer;font-family:'SF Mono','Fira Code',monospace;display:flex;align-items:center;justify-content:center;gap:10px;transition:all .2s;margin-bottom:16px;}
+.ai-run-btn:hover:not(:disabled){background:linear-gradient(135deg,#1e3f7a,#0d2030);}
+.ai-run-btn:disabled{opacity:.4;cursor:not-allowed;}
+.ai-thinking{display:none;align-items:center;gap:10px;color:var(--t1);font-size:12px;font-family:sans-serif;padding:12px 0;margin-bottom:12px;}
+.ai-thinking.active{display:flex;}
+.ai-dot{width:7px;height:7px;border-radius:50%;background:var(--acc);animation:ai-pulse 1.2s ease-in-out infinite;}
+.ai-dot:nth-child(2){animation-delay:.2s;}.ai-dot:nth-child(3){animation-delay:.4s;}
+@keyframes ai-pulse{0%,80%,100%{transform:scale(.7);opacity:.4}40%{transform:scale(1);opacity:1}}
+.ai-output{background:var(--bg-2);border:.5px solid var(--border);border-radius:var(--rl);padding:1.25rem 1.5rem;font-family:sans-serif;font-size:13px;line-height:1.7;color:var(--t0);display:none;}
+.ai-output.active{display:block;}
+.ai-output h2{font-size:15px;font-weight:700;color:var(--t0);margin:1.2rem 0 .5rem;border-bottom:.5px solid var(--border);padding-bottom:.4rem;}
+.ai-output h2:first-child{margin-top:0;}
+.ai-output h3{font-size:13px;font-weight:700;color:var(--blu-t);margin:.9rem 0 .4rem;}
+.ai-output p{margin:.4rem 0;color:var(--t1);}
+.ai-output strong{color:var(--t0);}
+.ai-output ul,.ai-output ol{margin:.4rem 0 .4rem 1.2rem;color:var(--t1);}
+.ai-output li{margin:.2rem 0;}
+.ai-output code{font-family:'SF Mono','Fira Code',monospace;font-size:11px;background:var(--bg-3);padding:1px 6px;border-radius:4px;color:var(--acc);}
+.ai-output pre{background:var(--bg-3);border:.5px solid var(--border);border-radius:var(--r);padding:12px;overflow-x:auto;margin:.6rem 0;}
+.ai-output pre code{background:none;padding:0;font-size:12px;color:var(--t0);}
+.ai-tbl{width:100%;border-collapse:collapse;font-size:12px;margin:.6rem 0 1rem;}
+.ai-tbl th{background:var(--bg-3);font-size:10px;font-weight:700;color:var(--t2);text-align:left;padding:7px 10px;border:.5px solid var(--border);text-transform:uppercase;letter-spacing:.06em;}
+.ai-tbl td{padding:8px 10px;border:.5px solid var(--border);vertical-align:middle;color:var(--t1);font-size:12px;}
+.ai-tbl tr:nth-child(even) td{background:rgba(255,255,255,.018);}
+.ai-verdict-pass{color:var(--grn-t);font-weight:700;}
+.ai-verdict-warn{color:var(--amb-t);font-weight:700;}
+.ai-verdict-fail{color:var(--red-t);font-weight:700;}
+.ai-badge-pass{display:inline-block;padding:2px 9px;border-radius:999px;font-size:10px;font-weight:700;background:var(--grn-dim);color:var(--grn-t);border:.5px solid #1a5535;}
+.ai-badge-warn{display:inline-block;padding:2px 9px;border-radius:999px;font-size:10px;font-weight:700;background:var(--amb-dim);color:var(--amb-t);border:.5px solid #5a3a10;}
+.ai-badge-fail{display:inline-block;padding:2px 9px;border-radius:999px;font-size:10px;font-weight:700;background:var(--red-dim);color:var(--red-t);border:.5px solid #5a1a1a;}
+.ai-src-link{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--acc);text-decoration:none;background:var(--acc-dim);border:.5px solid var(--acc-dim);padding:3px 10px;border-radius:999px;font-family:sans-serif;transition:background .15s;}
+.ai-src-link:hover{background:#1e3f7a;}
+.gh-link{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--t2);text-decoration:none;background:var(--bg-2);border:.5px solid var(--border);padding:4px 12px;border-radius:999px;font-family:sans-serif;transition:all .15s;}
+.gh-link:hover{color:var(--t0);border-color:var(--border-hi);}
 </style>
 </head>
 <body>
@@ -146,9 +188,25 @@ select.inp:focus{border-color:var(--acc);}
 <div class="hdr">
   <div>
     <div class="htitle">eZee Absolute ↔ Odoo 19 — Financial Check</div>
-    <div class="hsub">Swiss Blue Group · eZee Absolute ↔ Odoo 19</div>
+    <div class="hsub">Watan Designs Group · eZee FAS ↔ Odoo 19 Enterprise</div>
   </div>
-  <div class="badge" id="prop-badge">Select property</div>
+  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end">
+    <a class="gh-link" href="https://github.com/dubaiincairo/newrepository" target="_blank" rel="noopener">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 21.795 24 17.295 24 12c0-6.63-5.37-12-12-12"/></svg>
+      Integration Repo
+    </a>
+    <button class="gh-link" style="cursor:pointer;border:none;font-size:11px;" onclick="toggleKeyPanel()" title="Set Anthropic API key for AI Insight tab">🔑 AI Key</button>
+    <div class="badge" id="prop-badge">Select property</div>
+  </div>
+</div>
+<div id="key-panel" style="display:none;background:var(--bg-1);border:.5px solid var(--border);border-radius:var(--rl);padding:1rem 1.2rem;margin-bottom:1rem;">
+  <div style="font-size:11px;color:var(--t2);font-family:sans-serif;margin-bottom:8px;">Anthropic API key — stored in session memory only, never sent anywhere except to the <code style="font-size:10px;background:var(--bg-3);padding:1px 5px;border-radius:3px;color:var(--acc)">/api/claude</code> proxy on this deployment.</div>
+  <div style="display:flex;gap:8px;align-items:center">
+    <input class="ai-key-inp" id="global-api-key" type="password" placeholder="sk-ant-…" autocomplete="off" style="flex:1">
+    <button class="ai-key-btn" onclick="saveKey()">Save</button>
+    <button class="ai-key-btn" style="background:var(--bg-3);border-color:var(--border);color:var(--t1)" onclick="clearKey()">Clear</button>
+  </div>
+  <div id="key-status" style="font-size:11px;margin-top:6px;font-family:sans-serif;color:var(--t2)"></div>
 </div>
 
 <div class="sl">Property</div>
@@ -933,7 +991,7 @@ document.getElementById('run-btn').addEventListener('click',async function(){
       <div class="sc"><div class="scl">Folios</div><div class="scv">${resRows.length}</div><div class="scs" style="color:${resFail>0?'var(--red-t)':'var(--grn-t)'}">✗ ${resFail} issues · ✓ ${resOk} ok</div></div>
       <div class="sc"><div class="scl">Net collected</div><div class="scv" style="font-size:13px">${sar(oNetCollected)}</div><div class="scs">Odoo Amount Signed</div></div>
     </div>`;
-    h+=`<div class="tabs"><div class="tab active" data-tab="checks">Financial checks</div><div class="tab" data-tab="reservations">Folio by folio${resFail>0?` <span style="color:var(--red-t);font-weight:700">(${resFail})</span>`:''}</div></div>`;
+    h+=`<div class="tabs"><div class="tab active" data-tab="checks">Financial checks</div><div class="tab" data-tab="reservations">Folio by folio${resFail>0?` <span style="color:var(--red-t);font-weight:700">(${resFail})</span>`:''}</div><div class="tab" data-tab="ai-insight" style="color:var(--acc);font-weight:600">✦ AI Insight</div></div>`;
 
     h+=`<div class="tc active" id="tab-checks">
     <div class="note">Check 5 (Municipality 2.5%): Municipality is a regular invoice line in Odoo (not a tax object), so it is included inside the Untaxed Amount. Odoo municipality is derived as: Untaxed Amount − Net Revenue.</div>
@@ -986,12 +1044,53 @@ document.getElementById('run-btn').addEventListener('click',async function(){
     });
     h+=`</tbody></table></div></div>`;
 
+    // --- AI Insight tab ---
+    // Store full parsed data for AI access
+    window._aiContext={
+      prop:prop,propKey,fromStr,toStr,
+      chks,resRows,
+      ezee:{totalGross,vatAmount,muniAmount,discount,adjustment,roomRevenue,extraCharges,cashIn,cashRef,nonCashIn,nonCashRef,totalRefund,netCollected},
+      odoo:{totalGross:odooTotalGross,totalUntaxed:odooTotalUntaxed,totalVAT:odooTotalVAT,muniAmount:odooMuniAmount,cashIn:oCashIn,cashOut:oCashOut,nonCashIn:oNonCashIn,nonCashOut:oNonCashOut,totalRefund:oTotalRefund,netCollected:oNetCollected},
+      rawEsales:esR,rawHeaders:{esales:esRH,ojnl:ojRH,opay:opRH},rawNorm:{esales:esNH,ojnl:ojNH,opay:opNH},
+      rawOjnl:ojR,rawOpay:opR,
+      rcSections:er.sections,
+      advRows:PARSED['eadv']?.rows||[],
+      C,OC,PC,
+    };
+    h+=`<div class="tc" id="tab-ai-insight">
+      <div class="ai-key-bar">
+        <label>Anthropic API key</label>
+        <input class="ai-key-inp" id="ai-key-inp" type="password" placeholder="sk-ant-…  (stored in session only)" autocomplete="off">
+        <button class="ai-key-btn" id="ai-key-save" onclick="aiSaveKey()">Set Key</button>
+        <a class="ai-src-link" href="https://github.com/dubaiincairo/newrepository" target="_blank" rel="noopener">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 21.795 24 17.295 24 12c0-6.63-5.37-12-12-12"/></svg>
+          Integration Repo (dubaiincairo/newrepository)
+        </a>
+      </div>
+      <button class="ai-run-btn" id="ai-run-btn" onclick="runAIAnalysis()">
+        <span style="font-size:16px">✦</span> Run Claude AI Insight — Full Reasoning Analysis
+      </button>
+      <div class="ai-thinking" id="ai-thinking">
+        <div class="ai-dot"></div><div class="ai-dot"></div><div class="ai-dot"></div>
+        <span id="ai-thinking-msg">Claude is analysing all five reports…</span>
+      </div>
+      <div class="ai-output" id="ai-output"></div>
+    </div>`;
+
     const area=document.getElementById('results');
     area.innerHTML=h;
     area.querySelectorAll('.tab[data-tab]').forEach(t=>{
       t.addEventListener('click',()=>{
         area.querySelectorAll('.tab[data-tab]').forEach(x=>x.classList.toggle('active',x.dataset.tab===t.dataset.tab));
         area.querySelectorAll('.tc').forEach(c=>c.classList.toggle('active',c.id==='tab-'+t.dataset.tab));
+        if(t.dataset.tab==='ai-insight'){
+          const stored=sessionStorage.getItem('_ant_key')||'';
+          const inp=document.getElementById('ai-key-inp');
+          if(inp&&stored)inp.value=stored;
+          // Sync from global key panel too
+          const global=document.getElementById('global-api-key');
+          if(inp&&global&&global.value&&!inp.value)inp.value=global.value;
+        }
       });
     });
     area.scrollIntoView({behavior:'smooth',block:'start'});
@@ -1093,6 +1192,382 @@ function exportFolioCSV(){
     ]);
   });
   downloadCSV(`folio_by_folio_${new Date().toISOString().slice(0,10)}.csv`,rows);
+}
+
+// ─── Key management ────────────────────────────────────────────────────────
+function toggleKeyPanel(){
+  const p=document.getElementById('key-panel');
+  p.style.display=p.style.display==='none'?'block':'none';
+  if(p.style.display==='block'){
+    const stored=sessionStorage.getItem('_ant_key')||'';
+    const inp=document.getElementById('global-api-key');
+    if(inp&&stored){inp.value=stored;document.getElementById('key-status').textContent='Key loaded from session.';}
+  }
+}
+function saveKey(){
+  const v=(document.getElementById('global-api-key').value||'').trim();
+  if(!v){showToast('Please enter a key.',true);return;}
+  sessionStorage.setItem('_ant_key',v);
+  document.getElementById('key-status').textContent='✓ Key saved for this session.';
+  showToast('API key saved for this session.');
+}
+function clearKey(){
+  sessionStorage.removeItem('_ant_key');
+  document.getElementById('global-api-key').value='';
+  document.getElementById('key-status').textContent='Key cleared.';
+}
+function aiSaveKey(){
+  const v=(document.getElementById('ai-key-inp').value||'').trim();
+  if(!v){showToast('Please enter an Anthropic API key.',true);return;}
+  sessionStorage.setItem('_ant_key',v);
+  // sync to global panel too
+  const g=document.getElementById('global-api-key');
+  if(g)g.value=v;
+  showToast('API key saved for this session.');
+}
+
+// ─── Build AI prompt ───────────────────────────────────────────────────────
+function buildAIPrompt(ctx){
+  const f2=(n)=>typeof n==='number'?n.toFixed(2):'—';
+
+  // Serialize raw eZee revenue rows (condensed)
+  let revLines='';
+  const revCols=['folio','res','guest','room','arrival','ezeeTot','ezeeVat','ezeeMuni','ezeeRoom','ezeeExtra','ezeeDisc','ezeeAdj',
+    'ezeeCashIn','ezeeCashRef','ezeeSpanIn','ezeeVisaIn','ezeeMasterIn','ezeeGccIn','ezeeBankIn'];
+  if(ctx.rawEsales&&ctx.rawEsales.length){
+    const C=ctx.C;
+    ctx.rawEsales.forEach(r=>{
+      const get=k=>r[k]?r[k].trim():'';
+      revLines+=`| ${get(C.folio)} | ${get(C.res)} | ${get(C.guest)} | ${get(C.total)||'0'} | ${get(C.vat)||'0'} | ${get(C.muni)||'0'} | ${get(C.cashIn)||'0'} | ${get(C.cashRef)||'0'} | ${get(C.spanIn)||'0'} | ${get(C.visaIn)||'0'} |\n`;
+    });
+  }
+
+  // Serialize Daily Receipt sections
+  let rcLines='';
+  if(ctx.rcSections){
+    Object.entries(ctx.rcSections).forEach(([mode,rows])=>{
+      rows.forEach(row=>{
+        rcLines+=`| ${mode} | ${String(row[0]||'').trim()} | ${String(row[1]||'').trim()} | ${String(row[2]||'').trim()} | ${Number(row[3]||0).toFixed(2)} |\n`;
+      });
+    });
+  }
+
+  // Serialize Advance Deposit
+  let advLines='';
+  if(ctx.advRows&&ctx.advRows.length){
+    ctx.advRows.forEach(r=>{
+      const vals=Object.values(r).slice(0,8).map(v=>String(v||'').trim().replace(/\|/g,'/')).join(' | ');
+      advLines+=`| ${vals} |\n`;
+    });
+  }else advLines='(no activity)\n';
+
+  // Serialize Odoo Journal Entries
+  let ojLines='';
+  if(ctx.rawOjnl&&ctx.rawOjnl.length){
+    const OC=ctx.OC;
+    ctx.rawOjnl.forEach(r=>{
+      const get=k=>k&&r[k]?r[k].trim():'—';
+      ojLines+=`| ${get(OC.number)} | ${get(OC.folio)} | ${get(OC.partner)} | ${get(OC.total)} | ${get(OC.untaxed)} | ${r['status_in_payment']||r['state']||get(null)} |\n`;
+    });
+  }
+
+  // Serialize Odoo Payments
+  let opLines='';
+  if(ctx.rawOpay&&ctx.rawOpay.length){
+    const PC=ctx.PC;
+    ctx.rawOpay.forEach(r=>{
+      const get=k=>k&&r[k]?r[k].trim():'—';
+      opLines+=`| ${get(PC.journal)} | ${get(PC.amtSgn)} | ${get(PC.payType)} | ${get(PC.state)} | ${r['receipt_number']||r['numero_de_recu']||'—'} | ${r['customer_vendor']||r['partner']||'—'} |\n`;
+    });
+  }
+
+  // Financial checks results summary
+  let chkLines='';
+  ctx.chks.forEach(c=>{
+    chkLines+=`| ${c.id}. ${c.label} | ${f2(c.ezeeVal)} | ${f2(c.odooVal)} | ${f2(c.diff)} | ${c.status.toUpperCase()} |\n`;
+  });
+
+  // Folio matching issues
+  const issues=ctx.resRows.filter(r=>r.status!=='ok');
+  let issueLines='';
+  issues.forEach(r=>{
+    issueLines+=`| ${r.fol} | ${r.res} | ${r.guestEzee} | ${f2(r.ezeeTot)} | ${f2(r.odooTot)} | ${f2(r.diff)} | ${r.status.toUpperCase()} |\n`;
+  });
+
+  const prompt=`# Financial Validation Request
+
+**Property:** ${ctx.prop.label}${ctx.prop.city?' — '+ctx.prop.city:''}
+**Date Range:** ${ctx.fromStr} → ${ctx.toStr}
+**Integration:** eZee Absolute FAS → Odoo 19 Enterprise
+**GitHub Integration Module:** https://github.com/dubaiincairo/newrepository
+
+---
+
+## RAW DATA — eZee Detail Revenue Report
+
+Columns: Folio | Res No | Guest | Total (SAR incl tax) | VAT 15% | Municipality 2.5% | Cash Collected | Cash Refund | SPAN Collected | VISA Collected |
+
+${revLines||'(no rows)'}
+
+**Computed totals:**
+- eZee gross revenue (incl VAT+Muni): SAR ${f2(ctx.ezee.totalGross)}
+- eZee VAT 15%: SAR ${f2(ctx.ezee.vatAmount)}
+- eZee Municipality 2.5%: SAR ${f2(ctx.ezee.muniAmount)}
+- eZee net room revenue (excl all taxes): SAR ${f2(ctx.ezee.roomRevenue)}
+- eZee extra charges: SAR ${f2(ctx.ezee.extraCharges)}
+- eZee cash in: SAR ${f2(ctx.ezee.cashIn)} | cash refund: SAR ${f2(ctx.ezee.cashRef)}
+- eZee non-cash in: SAR ${f2(ctx.ezee.nonCashIn)} | non-cash refund: SAR ${f2(ctx.ezee.nonCashRef)}
+- eZee net collected: SAR ${f2(ctx.ezee.netCollected)}
+
+---
+
+## RAW DATA — eZee Daily Receipt Report
+
+Columns: Payment Mode | Date | Receipt No | Reference | Amount (SAR) |
+
+${rcLines||'(no rows)'}
+
+---
+
+## RAW DATA — eZee Advance Deposit Ledger
+
+${advLines}
+
+---
+
+## RAW DATA — Odoo Journal Entries (account.move)
+
+Columns: Journal Entry No | Folio No | Partner | Total Signed | Untaxed Signed | Status |
+
+${ojLines||'(no rows)'}
+
+**Odoo invoice totals:**
+- Odoo gross (Posted/In Payment): SAR ${f2(ctx.odoo.totalGross)}
+- Odoo untaxed: SAR ${f2(ctx.odoo.totalUntaxed)}
+- Odoo VAT computed: SAR ${f2(ctx.odoo.totalVAT)}
+- Odoo municipality (Untaxed − eZee net): SAR ${f2(ctx.odoo.muniAmount)}
+
+---
+
+## RAW DATA — Odoo Payments (account.payment)
+
+Columns: Journal | Amount Signed | Payment Type | State | Receipt Number | Partner |
+
+${opLines||'(no rows)'}
+
+**Odoo payment totals:**
+- Odoo cash in: SAR ${f2(ctx.odoo.cashIn)} | cash out: SAR ${f2(ctx.odoo.cashOut)}
+- Odoo non-cash in: SAR ${f2(ctx.odoo.nonCashIn)} | non-cash out: SAR ${f2(ctx.odoo.nonCashOut)}
+- Odoo net collected: SAR ${f2(ctx.odoo.netCollected)}
+
+---
+
+## Hardcoded Check Results (from the artifact JS logic — use for reference only)
+
+Columns: # Check | eZee (SAR) | Odoo (SAR) | Diff | Status |
+
+${chkLines}
+
+---
+
+## Folio Matching Issues (non-OK folios only)
+
+Columns: Folio | Res No | Guest | eZee Total | Odoo Total | Diff | Status |
+
+${issueLines||'(none — all folios matched)'}
+
+---
+
+## Your Task
+
+Using the full methodology from your skill definition, perform a complete financial validation for the above data. Do NOT rely solely on the hardcoded check results above — re-analyse the raw data yourself and verify or correct them.
+
+Specifically:
+1. Recompute all comparison checks independently from the raw data rows
+2. Identify any missing receipts in Odoo that exist in eZee (compare receipt numbers)
+3. Check for sign-handling issues with negative receipt amounts (refunds)
+4. Analyse the Municipality Fee absorption
+5. Classify any Draft 0.00 invoices
+6. Identify root causes of any discrepancies
+7. Provide the verdict, summary tables, gap table, and concrete action items per the skill output format`;
+
+  return prompt;
+}
+
+// ─── Run AI Analysis ───────────────────────────────────────────────────────
+const AI_SYSTEM=`You are a financial validation expert for the eZee FAS → Odoo 19 integration at Watan Designs Group.
+
+You have deep knowledge of:
+- eZee Absolute FAS reports: Detail Revenue Report, Daily Receipt, Advance Deposit Ledger
+- Odoo 19 Enterprise: Journal Entries (account.move), Payments (account.payment)
+- The ezee_fas_integration Odoo module (GitHub: dubaiincairo/newrepository)
+- Saudi Arabian hotel tax structure: 15% VAT + 2.5% Municipality Fee
+- Known bugs: (1) Cash refund receipts with negative amounts are silently dropped by the API sync; (2) Municipality Fee is absorbed into Odoo Untaxed Amount instead of appearing as a separate line
+
+When validating:
+- Check eZee receipt numbers against Odoo payment records one by one
+- Missing negative-amount receipts = sign-handling bug in the API
+- Municipality Fee check: Odoo_Untaxed − eZee_net_revenue should equal eZee_muni
+- Draft 0.00 invoices for long-stay corporate folios (FN-prefix, VNFO-prefix) are expected
+- Verdict rules: any missing receipt = FAIL; revenue gross mismatch = FAIL; only municipality absorption = WARN (known issue); all else OK = PASS
+
+Format your response as a structured markdown report with:
+1. Overall Verdict (✅ PASS / ⚠️ PASS WITH KNOWN ISSUES / ❌ FAIL) — bold, prominent
+2. Property & Date
+3. Revenue Summary table (eZee | Odoo | Diff | Status)
+4. Receipts & Collections table (by payment mode)
+5. Receipt-Level Gap Table (every missing receipt)
+6. Invoice count & Draft analysis
+7. Municipality Fee section
+8. Root Cause Analysis
+9. Action Required (for dev team and accountant separately)
+
+Be precise with SAR amounts. Flag every discrepancy even if small.`;
+
+async function runAIAnalysis(){
+  const ctx=window._aiContext;
+  if(!ctx){showToast('Please run the Financial Check first.',true);return;}
+
+  const keyInp=document.getElementById('ai-key-inp');
+  let key=(keyInp?keyInp.value.trim():'')||sessionStorage.getItem('_ant_key')||'';
+  if(!key){showToast('Please enter your Anthropic API key first.',true);return;}
+  sessionStorage.setItem('_ant_key',key);
+
+  const runBtn=document.getElementById('ai-run-btn');
+  const thinkEl=document.getElementById('ai-thinking');
+  const thinkMsg=document.getElementById('ai-thinking-msg');
+  const output=document.getElementById('ai-output');
+
+  runBtn.disabled=true;
+  thinkEl.classList.add('active');
+  output.classList.remove('active');
+  output.innerHTML='';
+
+  const steps=['Claude is reading all five reports…','Comparing receipt numbers one by one…','Checking municipality fee absorption…','Identifying sign-handling issues…','Drafting the validation report…'];
+  let si=0;
+  const stepTimer=setInterval(()=>{
+    if(si<steps.length){thinkMsg.textContent=steps[si++];}
+  },3500);
+
+  try{
+    const userMsg=buildAIPrompt(ctx);
+    const resp=await fetch('/api/claude',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':key},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-6',
+        max_tokens:8000,
+        system:AI_SYSTEM,
+        messages:[{role:'user',content:userMsg}],
+      }),
+    });
+
+    clearInterval(stepTimer);
+    thinkEl.classList.remove('active');
+
+    if(!resp.ok){
+      const err=await resp.json().catch(()=>({error:'HTTP '+resp.status}));
+      output.innerHTML=`<div style="color:var(--red-t);font-family:sans-serif;font-size:12px"><strong>API Error ${resp.status}:</strong> ${err.error?.message||JSON.stringify(err)}</div>`;
+      output.classList.add('active');
+      runBtn.disabled=false;
+      return;
+    }
+
+    const data=await resp.json();
+    const text=data.content?.[0]?.text||'(no response)';
+
+    output.innerHTML=renderMarkdown(text);
+    output.classList.add('active');
+    // Add copy button
+    const copyBtn=document.createElement('button');
+    copyBtn.textContent='Copy report';
+    copyBtn.style.cssText='margin-top:14px;background:var(--bg-3);border:.5px solid var(--border);color:var(--t1);padding:6px 16px;border-radius:6px;cursor:pointer;font-size:12px;font-family:sans-serif;display:block;';
+    copyBtn.onclick=()=>{navigator.clipboard.writeText(text).then(()=>showToast('Report copied to clipboard.'));};
+    output.appendChild(copyBtn);
+
+  }catch(err){
+    clearInterval(stepTimer);
+    thinkEl.classList.remove('active');
+    output.innerHTML=`<div style="color:var(--red-t);font-family:sans-serif;font-size:12px"><strong>Error:</strong> ${err.message}</div>`;
+    output.classList.add('active');
+  }finally{
+    runBtn.disabled=false;
+  }
+}
+
+// ─── Minimal markdown renderer ─────────────────────────────────────────────
+function renderMarkdown(md){
+  // Process tables first (multi-line)
+  md=md.replace(/(\|[^\n]+\|\n)((?:\|[-: ]+\|\n))(\|[^\n]+\|\n)+/g,(match)=>{
+    const lines=match.trim().split('\n');
+    const headers=lines[0].split('|').filter((_,i,a)=>i>0&&i<a.length-1).map(h=>`<th>${esc(h.trim())}</th>`).join('');
+    const body=lines.slice(2).map(row=>{
+      const cells=row.split('|').filter((_,i,a)=>i>0&&i<a.length-1).map(c=>{
+        let txt=esc(c.trim());
+        // colorize status badges inside tables
+        txt=txt.replace(/\b(PASS|✅)\b/g,'<span class="ai-badge-pass">PASS</span>');
+        txt=txt.replace(/\b(WARN|⚠️)\b/g,'<span class="ai-badge-warn">WARN</span>');
+        txt=txt.replace(/\b(FAIL|❌)\b/g,'<span class="ai-badge-fail">FAIL</span>');
+        return`<td>${txt}</td>`;
+      }).join('');
+      return`<tr>${cells}</tr>`;
+    }).join('');
+    return`<table class="ai-tbl"><thead><tr>${headers}</tr></thead><tbody>${body}</tbody></table>`;
+  });
+
+  const lines=md.split('\n');
+  let html='';
+  let inUl=false,inOl=false,inPre=false,preBuf='';
+
+  for(let i=0;i<lines.length;i++){
+    let line=lines[i];
+
+    if(line.startsWith('```')){
+      if(!inPre){inPre=true;preBuf='';}
+      else{html+=`<pre><code>${esc(preBuf)}</code></pre>`;inPre=false;preBuf='';}
+      continue;
+    }
+    if(inPre){preBuf+=line+'\n';continue;}
+
+    if(inUl&&!line.match(/^[\s]*[-*+] /)){html+='</ul>';inUl=false;}
+    if(inOl&&!line.match(/^[\s]*\d+\. /)){html+='</ol>';inOl=false;}
+
+    if(line.startsWith('## ')){
+      html+=`<h2>${inlineFormat(line.slice(3))}</h2>`;
+    } else if(line.startsWith('### ')){
+      html+=`<h3>${inlineFormat(line.slice(4))}</h3>`;
+    } else if(line.startsWith('# ')){
+      html+=`<h2>${inlineFormat(line.slice(2))}</h2>`;
+    } else if(line.match(/^[\s]*[-*+] /)){
+      if(!inUl){html+='<ul>';inUl=true;}
+      html+=`<li>${inlineFormat(line.replace(/^[\s]*[-*+] /,''))}</li>`;
+    } else if(line.match(/^[\s]*\d+\. /)){
+      if(!inOl){html+='<ol>';inOl=true;}
+      html+=`<li>${inlineFormat(line.replace(/^[\s]*\d+\. /,''))}</li>`;
+    } else if(line.trim().startsWith('<table')||line.trim().startsWith('<thead')||line.trim().startsWith('<tbody')||line.trim().startsWith('<tr')||line.trim().startsWith('<th')||line.trim().startsWith('<td')||line.trim().startsWith('</t')){
+      html+=line; // already rendered table HTML
+    } else if(line.trim()==='---'||line.trim()==='***'||line.trim()==='___'){
+      html+='<hr style="border:none;border-top:.5px solid var(--border);margin:1rem 0;">';
+    } else if(line.trim()){
+      html+=`<p>${inlineFormat(line)}</p>`;
+    }
+  }
+  if(inUl)html+='</ul>';
+  if(inOl)html+='</ol>';
+  if(inPre)html+=`<pre><code>${esc(preBuf)}</code></pre>`;
+  return html;
+}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function inlineFormat(s){
+  s=esc(s);
+  s=s.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
+  s=s.replace(/\*(.+?)\*/g,'<em>$1</em>');
+  s=s.replace(/`(.+?)`/g,'<code>$1</code>');
+  // colorize emoji verdicts
+  s=s.replace(/(✅\s*PASS[^\s<]*)/g,'<span class="ai-verdict-pass">$1</span>');
+  s=s.replace(/(⚠️\s*PASS[^\s<]*)/g,'<span class="ai-verdict-warn">$1</span>');
+  s=s.replace(/(❌\s*FAIL[^\s<]*)/g,'<span class="ai-verdict-fail">$1</span>');
+  return s;
 }
 </script>
 </body>

@@ -1,4 +1,10 @@
 {
   "outputDirectory": ".",
-  "cleanUrls": true
+  "cleanUrls": true,
+  "functions": {
+    "api/claude.js": {
+      "memory": 512,
+      "maxDuration": 60
+    }
+  }
 }
